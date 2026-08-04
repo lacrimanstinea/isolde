@@ -1,0 +1,14 @@
+{
+  "name": "isolde",
+  "private": true,
+  "workspaces": [
+    "core/*",
+    "shared/*"
+  ],
+  "scripts": {
+    "dev:app": "bun --filter @isolde/app dev:web",
+    "dev:tauri": "bun --filter @isolde/tauri dev",
+    "build:app": "bun --filter @isolde/app build:web",
+    "build:tauri": "bun --filter @isolde/tauri build"
+  }
+}
