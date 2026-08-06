@@ -22,7 +22,7 @@
         "allowLinkPreview": false,
         "browserExtensionsEnabled": false,
         "zoomHotkeysEnabled": false,
-        "decorations": true,
+        "decorations": false,
         "focus": true
       }
     ],
