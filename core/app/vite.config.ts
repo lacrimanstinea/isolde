@@ -1,13 +1,14 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
-import { getLocalIPv4 } from '@isolde/utils';
 
 const isHostMode = process.argv.includes('--host') || process.argv.includes('-h');
 
-const localIp = isHostMode
-  ? process.env.TAURI_DEV_HOST || getLocalIPv4()
-  : 'localhost';
+let localIp = 'localhost';
+if (isHostMode) {
+  const { getLocalIPv4 } = await import('@isolde/utils');
+  localIp = process.env.TAURI_DEV_HOST || getLocalIPv4();
+}
 
 export default defineConfig({
   plugins: [tailwindcss(), sveltekit()],
