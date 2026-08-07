@@ -4,7 +4,6 @@ on:
       is-release:
         type: boolean
         required: true
-
 jobs:
   build:
     name: ${{ matrix.target }}
@@ -26,41 +25,33 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.rust-target }}
-
       - uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "17"
-
       - uses: android-actions/setup-android@v3
-
       - run: |
           sdkmanager "ndk;27.0.12077973"
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/27.0.12077973" >> $GITHUB_ENV
           echo "NDK_HOME=$ANDROID_HOME/ndk/27.0.12077973" >> $GITHUB_ENV
-
       - uses: Swatinem/rust-cache@v2
         with:
           key: android-${{ matrix.target }}
-
       - run: bun install
-
-      - name: Update app identifier for preview
+      - name: Update app identifier and name for preview
         if: "!inputs.is-release"
         run: |
           sed -i 's/"identifier": "com.lacrimanstinea.isolde"/"identifier": "com.lacrimanstinea.isolde.preview"/g' core/tauri/src-tauri/tauri.conf.json
-
+          sed -i 's/"productName": "isolde"/"productName": "isolde P"/g' core/tauri/src-tauri/tauri.conf.json
       - name: Initialize Android Project and Regenerate Icons
         run: |
           cd core/tauri/src-tauri
           rm -rf gen/android
           bun run tauri android init
           bun run tauri icon src-tauri/icons/icon.png
-
       - name: Create keystore for signing
         run: |
           mkdir -p core/tauri/src-tauri/gen/android
@@ -70,12 +61,10 @@ jobs:
           keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
           password=${{ secrets.ANDROID_KEY_PASSWORD }}
           EOF
-
       - name: Build for single architecture
         run: |
           cd core/tauri/src-tauri
           bun run tauri android build --apk --target ${{ matrix.target }}
-
       - uses: actions/upload-artifact@v4
         with:
           name: android-${{ matrix.target }}
