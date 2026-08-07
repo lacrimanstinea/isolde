@@ -9,7 +9,11 @@
     "dev:tauri:android:verbose": "concurrently -n web,android -c cyan,green -k \"bun run dev:web --host\" \"bun --filter @isolde/tauri tauri android dev -v\"",
     "// yes i know duplicates i do not care": "comment",
     "dev:all": "concurrently -n web,desktop,android -c cyan,blue,green -k \"bun run dev:web --host\" \"bun --filter @isolde/tauri dev\" \"bun --filter @isolde/tauri tauri android dev\"",
-    "dev:all:verbose": "concurrently -n web,desktop,android -c cyan,blue,green -k \"bun run dev:web --host\" \"bun --filter @isolde/tauri dev -v\" \"bun --filter @isolde/tauri tauri android dev -v\""
+    "dev:all:verbose": "concurrently -n web,desktop,android -c cyan,blue,green -k \"bun run dev:web --host\" \"bun --filter @isolde/tauri dev -v\" \"bun --filter @isolde/tauri tauri android dev -v\"",
+    "build:desktop": "bun --filter @isolde/tauri tauri build",
+    "build:android:aab": "bun --filter @isolde/tauri tauri android build",
+    "build:android:apk": "bun --filter @isolde/tauri tauri android build --apk",
+    "build:all": "bun run build:desktop && bun run build:android:aab"
   },
   "workspaces": [
     "core/*",
