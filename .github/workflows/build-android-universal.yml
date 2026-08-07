@@ -1,8 +1,13 @@
+name: Build Android Universal
+
 on:
   workflow_call:
     inputs:
       is-release:
         type: boolean
+        required: true
+      version:
+        type: string
         required: true
 
 jobs:
@@ -13,41 +18,39 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
-
       - uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "17"
-
       - uses: android-actions/setup-android@v3
-
       - run: |
           sdkmanager "ndk;27.0.12077973"
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/27.0.12077973" >> $GITHUB_ENV
           echo "NDK_HOME=$ANDROID_HOME/ndk/27.0.12077973" >> $GITHUB_ENV
-
       - uses: Swatinem/rust-cache@v2
         with:
           key: android-universal
-
       - run: bun install
-
-      - name: Update app identifier for preview
+      - name: Update app identifier and name for preview
         if: "!inputs.is-release"
         run: |
           sed -i 's/"identifier": "com.lacrimanstinea.isolde"/"identifier": "com.lacrimanstinea.isolde.preview"/g' core/tauri/src-tauri/tauri.conf.json
-
+          sed -i 's/"productName": "isolde"/"productName": "isoldeP"/g' core/tauri/src-tauri/tauri.conf.json
+      - name: Set app version
+        run: |
+          jq --arg v "${{ inputs.version }}" '.version = $v' core/tauri/src-tauri/tauri.conf.json > /tmp/tauri.conf.json.tmp
+          mv /tmp/tauri.conf.json.tmp core/tauri/src-tauri/tauri.conf.json
       - name: Initialize Android Project and Regenerate Icons
+        env:
+          VITE_APP_VERSION: ${{ inputs.version }}
         run: |
           cd core/tauri/src-tauri
           rm -rf gen/android
           bun run tauri android init
           bun run tauri icon src-tauri/icons/icon.png
-
       - name: Create keystore for signing
         run: |
           mkdir -p core/tauri/src-tauri/gen/android
@@ -57,12 +60,55 @@ jobs:
           keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
           password=${{ secrets.ANDROID_KEY_PASSWORD }}
           EOF
-
-      - name: Patch build.gradle.kts and Build Universal APK
+      - name: Wire up release signing config
         run: |
           cd core/tauri/src-tauri
-          cat >> gen/android/app/build.gradle.kts << 'PATCH'
+          python3 - << 'EOF'
+          import re, pathlib
+          p = pathlib.Path("gen/android/app/build.gradle.kts")
+          content = p.read_text()
 
+          content = content.replace(
+              "import java.util.Properties",
+              "import java.util.Properties\nimport java.io.FileInputStream",
+              1
+          )
+
+          signing_block = '''
+          signingConfigs {
+              create("release") {
+                  val keystorePropertiesFile = rootProject.file("key.properties")
+                  val keystoreProperties = Properties()
+                  if (keystorePropertiesFile.exists()) {
+                      keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+                  }
+                  keyAlias = keystoreProperties["keyAlias"] as String
+                  keyPassword = keystoreProperties["password"] as String
+                  storeFile = rootProject.file(keystoreProperties["storeFile"] as String)
+                  storePassword = keystoreProperties["password"] as String
+              }
+          }
+          '''
+          content = re.sub(r"(android \{\n)", r"\1" + signing_block, content, count=1)
+
+          content = content.replace(
+              'getByName("release") {',
+              'getByName("release") {\n          signingConfig = signingConfigs.getByName("release")',
+              1
+          )
+
+          if "signingConfigs.getByName(\"release\")" not in content:
+              raise SystemExit("Failed to wire up signing config - check build.gradle.kts structure")
+
+          p.write_text(content)
+          EOF
+      - name: Patch build.gradle.kts and Build Universal APK
+        env:
+          VITE_APP_VERSION: ${{ inputs.version }}
+        run: |
+          cd core/tauri/src-tauri
+          echo "" >> gen/android/app/build.gradle.kts
+          cat >> gen/android/app/build.gradle.kts << 'PATCH'
           android {
               defaultConfig {
                   ndk {
@@ -81,9 +127,7 @@ jobs:
               }
           }
           PATCH
-
           bun run tauri android build --apk
-
       - uses: actions/upload-artifact@v4
         with:
           name: android-universal
