@@ -2,13 +2,24 @@
   "name": "isolde",
   "private": true,
   "scripts": {
-    "dev:app": "bun --filter @isolde/app dev:web",
-    "dev:tauri": "bun --filter @isolde/tauri dev",
-    "build:app": "bun --filter @isolde/app build:web",
-    "build:tauri": "bun --filter @isolde/tauri build"
+    "dev:web": "bun --filter @isolde/app dev",
+    "dev:tauri:desktop": "concurrently -n web,desktop -c cyan,blue -k \"bun run dev:web\" \"bun --filter @isolde/tauri dev\"",
+    "dev:tauri:desktop:verbose": "concurrently -n web,desktop -c cyan,blue -k \"bun run dev:web\" \"bun --filter @isolde/tauri dev -v\"",
+    "dev:tauri:android": "concurrently -n web,android -c cyan,green -k \"bun run dev:web --host\" \"bun --filter @isolde/tauri tauri android dev\"",
+    "dev:tauri:android:verbose": "concurrently -n web,android -c cyan,green -k \"bun run dev:web --host\" \"bun --filter @isolde/tauri tauri android dev -v\"",
+    "// yes i know duplicates i do not care": "comment",
+    "dev:all": "concurrently -n web,desktop,android -c cyan,blue,green -k \"bun run dev:web --host\" \"bun --filter @isolde/tauri dev\" \"bun --filter @isolde/tauri tauri android dev\"",
+    "dev:all:verbose": "concurrently -n web,desktop,android -c cyan,blue,green -k \"bun run dev:web --host\" \"bun --filter @isolde/tauri dev -v\" \"bun --filter @isolde/tauri tauri android dev -v\""
   },
   "workspaces": [
     "core/*",
     "shared/*"
-  ]
+  ],
+  "devDependencies": {
+    "concurrently": "^10.0.4",
+    "cross-env": "^7.0.3"
+  },
+  "dependencies": {
+    "@types/node": "^26.1.2"
+  }
 }
