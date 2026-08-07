@@ -1,9 +1,15 @@
+name: Build Desktop
+
 on:
   workflow_call:
     inputs:
       is-release:
         type: boolean
         required: true
+      version:
+        type: string
+        required: true
+
 jobs:
   build:
     name: ${{ matrix.platform }}
@@ -16,7 +22,7 @@ jobs:
             os: macos-latest
             artifact-name: macos-universal
             targets: aarch64-apple-darwin, x86_64-apple-darwin
-            build-cmd: bun --filter @isolde/tauri tauri build --target universal-apple-darwin
+            build-cmd: VITE_APP_VERSION=${{ inputs.version }} bun --filter @isolde/tauri tauri build --target universal-apple-darwin
             artifact-path: |
               core/tauri/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
               core/tauri/src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
@@ -24,7 +30,7 @@ jobs:
             os: ubuntu-latest
             artifact-name: linux
             targets: ""
-            build-cmd: bun --filter @isolde/tauri tauri build
+            build-cmd: VITE_APP_VERSION=${{ inputs.version }} bun --filter @isolde/tauri tauri build
             artifact-path: |
               core/tauri/src-tauri/target/release/bundle/deb/*.deb
               core/tauri/src-tauri/target/release/bundle/appimage/*.AppImage
@@ -33,7 +39,7 @@ jobs:
             os: windows-latest
             artifact-name: windows
             targets: ""
-            build-cmd: bun --filter @isolde/tauri tauri build
+            build-cmd: $env:VITE_APP_VERSION="${{ inputs.version }}"; bun --filter @isolde/tauri tauri build
             artifact-path: |
               core/tauri/src-tauri/target/release/bundle/msi/*.msi
               core/tauri/src-tauri/target/release/bundle/nsis/*.exe
@@ -54,19 +60,26 @@ jobs:
         with:
           key: ${{ matrix.platform }}
       - run: bun install
+      - name: Set app version
+        shell: bash
+        run: |
+          jq --arg v "${{ inputs.version }}" '.version = $v' core/tauri/src-tauri/tauri.conf.json > /tmp/tauri.conf.json.tmp
+          mv /tmp/tauri.conf.json.tmp core/tauri/src-tauri/tauri.conf.json
       - name: Patch Bundle ID and Name (POSIX)
         if: "!inputs.is-release && matrix.platform != 'windows'"
         run: |
           sed -i '' 's/"identifier": "com.lacrimanstinea.isolde"/"identifier": "com.lacrimanstinea.isolde.preview"/g' core/tauri/src-tauri/tauri.conf.json 2>/dev/null || \
           sed -i 's/"identifier": "com.lacrimanstinea.isolde"/"identifier": "com.lacrimanstinea.isolde.preview"/g' core/tauri/src-tauri/tauri.conf.json
-          sed -i '' 's/"productName": "isolde"/"productName": "isolde P"/g' core/tauri/src-tauri/tauri.conf.json 2>/dev/null || \
-          sed -i 's/"productName": "isolde"/"productName": "isolde P"/g' core/tauri/src-tauri/tauri.conf.json
+          sed -i '' 's/"productName": "isolde"/"productName": "isoldeP"/g' core/tauri/src-tauri/tauri.conf.json 2>/dev/null || \
+          sed -i 's/"productName": "isolde"/"productName": "isoldeP"/g' core/tauri/src-tauri/tauri.conf.json
       - name: Patch Bundle ID and Name (Windows)
         if: "!inputs.is-release && matrix.platform == 'windows'"
         shell: pwsh
         run: |
-          (Get-Content core/tauri/src-tauri/tauri.conf.json) -replace '"identifier": "com.lacrimanstinea.isolde"', '"identifier": "com.lacrimanstinea.isolde.preview"' -replace '"productName": "isolde"', '"productName": "isolde P"' | Set-Content core/tauri/src-tauri/tauri.conf.json
+          (Get-Content core/tauri/src-tauri/tauri.conf.json) -replace '"identifier": "com.lacrimanstinea.isolde"', '"identifier": "com.lacrimanstinea.isolde.preview"' -replace '"productName": "isolde"', '"productName": "isoldeP"' | Set-Content core/tauri/src-tauri/tauri.conf.json
       - name: Build Application
+        env:
+          VITE_APP_VERSION: ${{ inputs.version }}
         run: ${{ matrix.build-cmd }}
       - uses: actions/upload-artifact@v4
         with:

@@ -1,9 +1,15 @@
+name: Build iOS
+
 on:
   workflow_call:
     inputs:
       is-release:
         type: boolean
         required: true
+      version:
+        type: string
+        required: true
+
 jobs:
   build:
     name: ios
@@ -24,17 +30,25 @@ jobs:
         if: "!inputs.is-release"
         run: |
           sed -i '' 's/"identifier": "com.lacrimanstinea.isolde"/"identifier": "com.lacrimanstinea.isolde.preview"/g' core/tauri/src-tauri/tauri.conf.json
-          sed -i '' 's/"productName": "isolde"/"productName": "isolde P"/g' core/tauri/src-tauri/tauri.conf.json
+          sed -i '' 's/"productName": "isolde"/"productName": "isoldeP"/g' core/tauri/src-tauri/tauri.conf.json
+      - name: Set app version
+        run: |
+          jq --arg v "${{ inputs.version }}" '.version = $v' core/tauri/src-tauri/tauri.conf.json > /tmp/tauri.conf.json.tmp
+          mv /tmp/tauri.conf.json.tmp core/tauri/src-tauri/tauri.conf.json
       - name: Initialize iOS Project and Regenerate Icons
+        env:
+          VITE_APP_VERSION: ${{ inputs.version }}
         run: |
           cd core/tauri/src-tauri
           rm -rf gen/apple
           bun run tauri ios init
           bun run tauri icon src-tauri/icons/icon.png
       - name: Build iOS App
+        env:
+          VITE_APP_VERSION: ${{ inputs.version }}
         run: |
           cd core/tauri/src-tauri
-          bun run tauri ios build --no-sign
+          VITE_APP_VERSION="${{ inputs.version }}" bun run tauri ios build --no-sign
       - id: find-ios
         run: |
           IPA_PATH=$(find core/tauri/src-tauri/gen/apple -name "*.ipa" 2>/dev/null | head -1 || echo "")
