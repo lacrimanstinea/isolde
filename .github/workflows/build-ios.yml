@@ -1,0 +1,76 @@
+on:
+  workflow_call:
+    inputs:
+      is-release:
+        type: boolean
+        required: true
+
+jobs:
+  build:
+    name: ios
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios, aarch64-apple-ios-sim
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ios
+
+      - run: bun install
+
+      - name: Update app identifier for preview
+        if: "!inputs.is-release"
+        run: |
+          sed -i '' 's/"identifier": "com.lacrimanstinea.isolde"/"identifier": "com.lacrimanstinea.isolde.preview"/g' core/tauri/src-tauri/tauri.conf.json
+
+      - name: Initialize iOS Project and Regenerate Icons
+        run: |
+          cd core/tauri/src-tauri
+          rm -rf gen/apple
+          bun run tauri ios init
+          bun run tauri icon src-tauri/icons/icon.png
+
+      - name: Build iOS App
+        run: |
+          cd core/tauri/src-tauri
+          bun run tauri ios build --no-sign
+
+      - id: find-ios
+        run: |
+          IPA_PATH=$(find core/tauri/src-tauri/gen/apple -name "*.ipa" 2>/dev/null | head -1 || echo "")
+          APP_PATH=$(find core/tauri/src-tauri/gen/apple -name "*.app" -type d 2>/dev/null | head -1 || echo "")
+
+          if [ -n "$IPA_PATH" ]; then
+            echo "found-ipa=true" >> $GITHUB_OUTPUT
+            echo "ipa-path=$IPA_PATH" >> $GITHUB_OUTPUT
+          elif [ -n "$APP_PATH" ]; then
+            echo "found-app=true" >> $GITHUB_OUTPUT
+            echo "app-path=$APP_PATH" >> $GITHUB_OUTPUT
+          else
+            echo "found-app=false" >> $GITHUB_OUTPUT
+            echo "found-ipa=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Package .app into .ipa if needed
+        if: steps.find-ios.outputs.found-app == 'true' && steps.find-ios.outputs.found-ipa != 'true'
+        run: |
+          mkdir -p Payload
+          cp -r "${{ steps.find-ios.outputs.app-path }}" Payload/
+          zip -r isolde-ios-unsigned.ipa Payload
+          rm -rf Payload
+          mkdir -p core/tauri/src-tauri/gen/apple/build
+          mv isolde-ios-unsigned.ipa core/tauri/src-tauri/gen/apple/build/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios
+          path: |
+            core/tauri/src-tauri/gen/apple/**/*.ipa
+            core/tauri/src-tauri/gen/apple/**/*.app

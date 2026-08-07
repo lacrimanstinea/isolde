@@ -1,0 +1,91 @@
+on:
+  workflow_call:
+    inputs:
+      is-release:
+        type: boolean
+        required: true
+
+jobs:
+  android-universal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - run: |
+          sdkmanager "ndk;27.0.12077973"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/27.0.12077973" >> $GITHUB_ENV
+          echo "NDK_HOME=$ANDROID_HOME/ndk/27.0.12077973" >> $GITHUB_ENV
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: android-universal
+
+      - run: bun install
+
+      - name: Update app identifier for preview
+        if: "!inputs.is-release"
+        run: |
+          sed -i 's/"identifier": "com.lacrimanstinea.isolde"/"identifier": "com.lacrimanstinea.isolde.preview"/g' core/tauri/src-tauri/tauri.conf.json
+
+      - name: Initialize Android Project and Regenerate Icons
+        run: |
+          cd core/tauri/src-tauri
+          rm -rf gen/android
+          bun run tauri android init
+          bun run tauri icon src-tauri/icons/icon.png
+
+      - name: Create keystore for signing
+        run: |
+          mkdir -p core/tauri/src-tauri/gen/android
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > core/tauri/src-tauri/gen/android/release.keystore
+          cat > core/tauri/src-tauri/gen/android/key.properties << EOF
+          storeFile=release.keystore
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          password=${{ secrets.ANDROID_KEY_PASSWORD }}
+          EOF
+
+      - name: Patch build.gradle.kts and Build Universal APK
+        run: |
+          cd core/tauri/src-tauri
+          cat >> gen/android/app/build.gradle.kts << 'PATCH'
+
+          android {
+              defaultConfig {
+                  ndk {
+                      abiFilters.add("arm64-v8a")
+                      abiFilters.add("armeabi-v7a")
+                      abiFilters.add("x86_64")
+                      abiFilters.add("x86")
+                  }
+              }
+              applicationVariants.all {
+                  val variant = this
+                  variant.outputs.all {
+                      val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+                      output.outputFileName = "isolde-universal.apk"
+                  }
+              }
+          }
+          PATCH
+
+          bun run tauri android build --apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-universal
+          path: |
+            core/tauri/src-tauri/gen/android/app/build/outputs/apk/**/isolde-universal.apk
