@@ -43,6 +43,8 @@ jobs:
           rm -rf gen/apple
           bun run tauri ios init
           bun run tauri icon src-tauri/icons/icon.png
+      - name: Create env file for app version
+        run: echo "VITE_APP_VERSION=${{ inputs.version }}" >> core/app/.env
       - name: Build iOS App
         env:
           VITE_APP_VERSION: ${{ inputs.version }}
