@@ -5,6 +5,7 @@
     const appWindow = getCurrentWindow();
 
     const appVersion = import.meta.env.VITE_APP_VERSION || 'dev version';
+    const isRelease = import.meta.env.VITE_IS_RELEASE === 'true';
 </script>
 
 <header
@@ -17,8 +18,8 @@
         class="flex items-center h-3 w-auto opacity-80 pointer-events-none gap-2"
     >
         <LogoText />
-        {#if appVersion === 'dev version' || appVersion.includes('-preview') || appVersion.includes('preview')}
-            <span class="text-xs text-white font-elms opacity-100">{appVersion}</span>
+        {#if !isRelease}
+            <span class="text-xs text-white font-elms opacity-100">{isRelease ? appVersion : appVersion + "-preview"}</span>
         {/if}
     </div>
 

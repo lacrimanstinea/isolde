@@ -134,11 +134,10 @@ jobs:
               }
           }
           PATCH
-      - name: Create env file for app version
-        run: echo "VITE_APP_VERSION=${{ inputs.version }}" >> core/app/.env
       - name: Build for single architecture
         env:
           VITE_APP_VERSION: ${{ inputs.version }}
+          VITE_IS_RELEASE: ${{ inputs.is-release }}
         run: |
           cd core/tauri/src-tauri
           bun run tauri android build --apk --target ${{ matrix.target }}
