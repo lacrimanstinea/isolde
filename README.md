@@ -16,7 +16,6 @@ A unified media app for movies, TV shows, anime, manga, comics, and books — br
   - [Quick start (development)](#quick-start-development)
 - [Project structure](#project-structure)
 - [Configuration](#configuration)
-- [Testing](#testing)
 - [Contributing](#contributing)
 
 ## What is isolde?
