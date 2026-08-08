@@ -134,10 +134,6 @@ jobs:
               }
           }
           PATCH
-      - name: Create env file
-        run: |
-          echo "VITE_APP_VERSION=${{ inputs.version }}" >> core/app/.env
-          echo "VITE_IS_RELEASE=${{ inputs.is-release }}" >> core/app/.env
       - name: Build for single architecture
         env:
           VITE_APP_VERSION: ${{ inputs.version }}

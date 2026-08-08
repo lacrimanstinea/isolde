@@ -102,10 +102,6 @@ jobs:
 
           p.write_text(content)
           EOF
-      - name: Create env file
-        run: |
-          echo "VITE_APP_VERSION=${{ inputs.version }}" >> core/app/.env
-          echo "VITE_IS_RELEASE=${{ inputs.is-release }}" >> core/app/.env
       - name: Patch build.gradle.kts and Build Universal APK
         env:
           VITE_APP_VERSION: ${{ inputs.version }}
