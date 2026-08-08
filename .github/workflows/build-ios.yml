@@ -44,13 +44,16 @@ jobs:
           bun run tauri ios init
           bun run tauri icon src-tauri/icons/icon.png
       - name: Create env file for app version
-        run: echo "VITE_APP_VERSION=${{ inputs.version }}" >> core/app/.env
+        run: |
+          echo "VITE_APP_VERSION=${{ inputs.version }}" >> core/app/.env
+          echo "VITE_IS_RELEASE=${{ inputs.is-release }}" >> core/app/.env
       - name: Build iOS App
         env:
           VITE_APP_VERSION: ${{ inputs.version }}
+          VITE_IS_RELEASE: ${{ inputs.is-release }}
         run: |
           cd core/tauri/src-tauri
-          VITE_APP_VERSION="${{ inputs.version }}" bun run tauri ios build --no-sign
+          VITE_APP_VERSION="${{ inputs.version }}" VITE_IS_RELEASE="${{ inputs.is-release }}" bun run tauri ios build --no-sign
       - id: find-ios
         run: |
           IPA_PATH=$(find core/tauri/src-tauri/gen/apple -name "*.ipa" 2>/dev/null | head -1 || echo "")

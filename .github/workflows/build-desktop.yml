@@ -25,6 +25,7 @@ jobs:
             build-cmd: |
               echo "VITE_APP_VERSION=${{ inputs.version }}" >> core/app/.env
               VITE_APP_VERSION="${{ inputs.version }}"
+              $env:VITE_IS_RELEASE="${{ inputs.is-release }}"
               bun --filter @isolde/tauri tauri build --target universal-apple-darwin
             artifact-path: |
               core/tauri/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
@@ -36,6 +37,7 @@ jobs:
             build-cmd: |
               echo "VITE_APP_VERSION=${{ inputs.version }}" >> core/app/.env
               VITE_APP_VERSION="${{ inputs.version }}"
+              $env:VITE_IS_RELEASE="${{ inputs.is-release }}"
               bun --filter @isolde/tauri tauri build
             artifact-path: |
               core/tauri/src-tauri/target/release/bundle/deb/*.deb
@@ -48,6 +50,7 @@ jobs:
             build-cmd: |
               "VITE_APP_VERSION=${{ inputs.version }}" | Out-File -Encoding utf8 core/app/.env
               $env:VITE_APP_VERSION="${{ inputs.version }}"
+              $env:VITE_IS_RELEASE="${{ inputs.is-release }}"
               bun --filter @isolde/tauri tauri build
             artifact-path: |
               core/tauri/src-tauri/target/release/bundle/msi/*.msi
@@ -89,6 +92,7 @@ jobs:
       - name: Build Application
         env:
           VITE_APP_VERSION: ${{ inputs.version }}
+          VITE_IS_RELEASE: ${{ inputs.is-release }}
         run: ${{ matrix.build-cmd }}
       - uses: actions/upload-artifact@v4
         with:
