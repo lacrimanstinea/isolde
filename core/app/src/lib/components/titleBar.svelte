@@ -6,6 +6,7 @@
 
     const appVersion = import.meta.env.VITE_APP_VERSION || 'dev';
     const isRelease = import.meta.env.VITE_IS_RELEASE === 'true';
+    const typeOfRelease = import.meta.env.VITE_TYPE_OF_RELEASE || 'preview';
 </script>
 
 <header
@@ -19,7 +20,7 @@
     >
         <LogoText />
         {#if !isRelease}
-            <span class="text-xs text-white font-elms opacity-100">{isRelease ? appVersion : appVersion + "-preview"}</span>
+            <span class="text-xs text-white font-elms opacity-100">{isRelease ? appVersion : appVersion + "-" + typeOfRelease}</span>
         {/if}
     </div>
 

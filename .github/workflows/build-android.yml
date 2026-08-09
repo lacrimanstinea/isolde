@@ -1,35 +1,55 @@
-name: Build Android Split
-
-on:
+name: Build Android
+'on':
   workflow_call:
     inputs:
       is-release:
         type: boolean
         required: true
+      type-of-release:
+        type: string
+        required: true
       version:
         type: string
         required: true
-
+      app-identifier:
+        type: string
+        required: true
+      product-name:
+        type: string
+        required: true
 jobs:
   build:
-    name: ${{ matrix.target }}
+    name: '${{ matrix.name }}'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          - target: aarch64
+          - name: split-aarch64
+            target: aarch64
             rust-target: aarch64-linux-android
             abi: arm64-v8a
-          - target: armv7
+            type: split
+          - name: split-armv7
+            target: armv7
             rust-target: armv7-linux-androideabi
             abi: armeabi-v7a
-          - target: x86_64
+            type: split
+          - name: split-x86_64
+            target: x86_64
             rust-target: x86_64-linux-android
             abi: x86_64
-          - target: i686
+            type: split
+          - name: split-i686
+            target: i686
             rust-target: i686-linux-android
             abi: x86
+            type: split
+          - name: universal
+            target: universal
+            rust-target: >-
+              aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+            type: universal
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -37,11 +57,11 @@ jobs:
           bun-version: latest
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.rust-target }}
+          targets: '${{ matrix.rust-target }}'
       - uses: actions/setup-java@v4
         with:
-          distribution: "temurin"
-          java-version: "17"
+          distribution: temurin
+          java-version: '17'
       - uses: android-actions/setup-android@v3
       - run: |
           sdkmanager "ndk;27.0.12077973"
@@ -49,44 +69,42 @@ jobs:
           echo "NDK_HOME=$ANDROID_HOME/ndk/27.0.12077973" >> $GITHUB_ENV
       - uses: Swatinem/rust-cache@v2
         with:
-          key: android-${{ matrix.target }}
+          key: 'android-${{ matrix.name }}'
       - run: bun install
-      - name: Update app identifier and name based on release state
+      - name: Update app identifier and name
+        shell: bash
         run: |
-          if [ "${{ inputs.is-release }}" == "true" ]; then
-            sed -i 's/"identifier": "com.lacrimanstinea.isolde.development"/"identifier": "com.lacrimanstinea.isolde"/g' core/tauri/src-tauri/tauri.conf.json
-            sed -i 's/"productName": "isoldeD"/"productName": "isolde"/g' core/tauri/src-tauri/tauri.conf.json
-          else
-            sed -i 's/"identifier": "com.lacrimanstinea.isolde.development"/"identifier": "com.lacrimanstinea.isolde.preview"/g' core/tauri/src-tauri/tauri.conf.json
-            sed -i 's/"productName": "isoldeD"/"productName": "isoldeP"/g' core/tauri/src-tauri/tauri.conf.json
-          fi
+          IDENTIFIER="${{ inputs.app-identifier }}"
+          PROD_NAME="${{ inputs.product-name }}"
+
+          sed -i "s/\"identifier\": \"com.lacrimanstinea.isolde.development\"/\"identifier\": \"$IDENTIFIER\"/g" core/tauri/src-tauri/tauri.conf.json
+          sed -i "s/\"productName\": \"isoldeD\"/\"productName\": \"$PROD_NAME\"/g" core/tauri/src-tauri/tauri.conf.json
       - name: Set app version
         run: |
           jq --arg v "${{ inputs.version }}" '.version = $v' core/tauri/src-tauri/tauri.conf.json > /tmp/tauri.conf.json.tmp
           mv /tmp/tauri.conf.json.tmp core/tauri/src-tauri/tauri.conf.json
-      - name: Initialize Android Project and Regenerate Icons
+      - name: Initialize Android Project
         run: |
           cd core/tauri/src-tauri
           rm -rf gen/android
           bun run tauri android init
-          if [ "${{ inputs.is-release }}" == "true" ]; then
-            bun --filter @isolde/tauri icon:release
-          else
+      - name: Regenerate Icons
+        run: |
+          cd core/tauri/src-tauri
+          INPUT_TYPE="${{ inputs.type-of-release }}"
+          ICON_TYPE="$INPUT_TYPE"
+
+          if [ "$INPUT_TYPE" = "stable" ]; then
+            ICON_TYPE="release"
+          elif [ -z "$ICON_TYPE" ]; then
+            ICON_TYPE="preview"
+          fi
+
+          echo "Attempting to generate icons for type: $ICON_TYPE"
+          if ! bun --filter @isolde/tauri icon:$ICON_TYPE; then
+            echo "::warning::Icon target 'icon:$ICON_TYPE' failed or does not exist. Falling back to icon:preview."
             bun --filter @isolde/tauri icon:preview
           fi
-      - name: Patch AndroidManifest.xml Activity Label
-        run: |
-          python3 -c '
-          import pathlib
-          manifest_path = pathlib.Path("core/tauri/src-tauri/gen/android/app/src/main/AndroidManifest.xml")
-          content = manifest_path.read_text()
-          content = content.replace("android:label=\"@string/main_activity_title\"", "android:label=\"@string/app_name\"")
-          manifest_path.write_text(content)
-          '
-      - name: Create env file for app version and release state
-        run: |
-          echo "VITE_APP_VERSION=${{ inputs.version }}" >> core/app/.env
-          echo "VITE_IS_RELEASE=${{ inputs.is-release }}" >> core/app/.env
       - name: Create keystore for signing
         run: |
           mkdir -p core/tauri/src-tauri/gen/android
@@ -96,7 +114,16 @@ jobs:
           keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
           password=${{ secrets.ANDROID_KEY_PASSWORD }}
           EOF
-      - name: Wire up release signing config
+      - name: Patch AndroidManifest.xml Activity Label
+        run: |
+          python3 -c '
+          import pathlib
+          manifest_path = pathlib.Path("core/tauri/src-tauri/gen/android/app/src/main/AndroidManifest.xml")
+          content = manifest_path.read_text()
+          content = content.replace("android:label=\"@string/main_activity_title\"", "android:label=\"@string/app_name\"")
+          manifest_path.write_text(content)
+          '
+      - name: Setup release signing config
         run: |
           cd core/tauri/src-tauri
           python3 - << 'EOF'
@@ -111,6 +138,7 @@ jobs:
           )
 
           signing_block = '''
+
           signingConfigs {
               create("release") {
                   val keystorePropertiesFile = rootProject.file("key.properties")
@@ -124,13 +152,14 @@ jobs:
                   storePassword = keystoreProperties["password"] as String
               }
           }
+
           '''
 
           content = re.sub(r"(android \{\n)", r"\1" + signing_block, content, count=1)
 
           content = content.replace(
               'getByName("release") {',
-              'getByName("release") {\n          signingConfig = signingConfigs.getByName("release")',
+              'getByName("release") {\n    signingConfig = signingConfigs.getByName("release")',
               1
           )
 
@@ -139,30 +168,58 @@ jobs:
 
           p.write_text(content)
           EOF
-      - name: Patch build.gradle.kts for Single Architecture
+      - name: Patch build.gradle.kts for ABI filters
+        shell: bash
         run: |
           cd core/tauri/src-tauri
           echo "" >> gen/android/app/build.gradle.kts
+          if [ "${{ matrix.type }}" == "split" ]; then
           cat >> gen/android/app/build.gradle.kts << 'PATCH'
           android {
               defaultConfig {
                   ndk {
                       abiFilters.clear()
-                      abiFilters.add("${{ matrix.abi }}")
+                      abiFilters.add("x86")
                   }
               }
           }
           PATCH
-      - name: Build for single architecture
+          else
+          cat >> gen/android/app/build.gradle.kts << 'PATCH'
+          android {
+              defaultConfig {
+                  ndk {
+                      abiFilters.add("arm64-v8a")
+                      abiFilters.add("armeabi-v7a")
+                      abiFilters.add("x86_64")
+                      abiFilters.add("x86")
+                  }
+              }
+              applicationVariants.all {
+                  val variant = this
+                  variant.outputs.all {
+                      val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+                      output.outputFileName = "isolde-universal.apk"
+                  }
+              }
+          }
+          PATCH
+          fi
+      - name: Build APK
         env:
-          VITE_APP_VERSION: ${{ inputs.version }}
-          VITE_IS_RELEASE: ${{ inputs.is-release }}
+          VITE_APP_VERSION: '${{ inputs.version }}'
+          VITE_IS_RELEASE: '${{ inputs.is-release }}'
+          VITE_TYPE_OF_RELEASE: '${{ inputs.type-of-release }}'
         run: |
           cd core/tauri/src-tauri
-          bun run tauri android build --apk --target ${{ matrix.target }}
+          if [ "${{ matrix.type }}" == "split" ]; then
+            bun run tauri android build --apk --target ${{ matrix.target }}
+          else
+            bun run tauri android build --apk
+          fi
       - uses: actions/upload-artifact@v4
         with:
-          name: android-${{ matrix.target }}
+          name: 'android-${{ matrix.name }}'
           path: |
             core/tauri/src-tauri/gen/android/app/build/outputs/apk/**/*.apk
           if-no-files-found: error

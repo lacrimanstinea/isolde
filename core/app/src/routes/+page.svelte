@@ -3,6 +3,10 @@
     import { getPlatform, type PlatformInfo } from '$lib/utils/platform';
     let platform = $state<PlatformInfo | null>(null);
 
+    const appVersion = import.meta.env.VITE_APP_VERSION || 'dev';
+    const isRelease = import.meta.env.VITE_IS_RELEASE === 'true';
+    const typeOfRelease = import.meta.env.VITE_TYPE_OF_RELEASE || 'preview';
+
     onMount(async () => {
         platform = await getPlatform();
     });
@@ -11,7 +15,7 @@
 <div class="flex flex-col min-h-full">
     <!-- stick to top -->
     <div>
-        <h1 class="text-8xl">first official release</h1> <h2 class="text-9xl text-accent font-thin italic">0.1.0</h2>
+        <h1 class="text-8xl">first official release</h1> <h2 class="text-9xl text-accent font-thin italic">{appVersion + (isRelease ? '' : '-' + typeOfRelease)}</h2>
         <p>i call it release, but it's just to test github actions really</p>
         <p>hello:)</p>
         <a href="https://github.com/lacrimanstinea/isolde">test link to repo</a> - does not open a separate browser window
