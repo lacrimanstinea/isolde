@@ -9,3 +9,6 @@
 # will have generated Android and iOS artifacts on build step
 /gen/android
 /gen/ios
+
+# generate these on build step, or locally for development
+/icons
