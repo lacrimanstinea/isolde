@@ -4,7 +4,7 @@
     import LogoText from '$lib/assets/logoText.svelte';
     const appWindow = getCurrentWindow();
 
-    const appVersion = import.meta.env.VITE_APP_VERSION || 'dev version';
+    const appVersion = import.meta.env.VITE_APP_VERSION || 'dev';
     const isRelease = import.meta.env.VITE_IS_RELEASE === 'true';
 </script>
 
