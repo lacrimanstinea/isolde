@@ -40,12 +40,13 @@ export async function getPlatform(): Promise<PlatformInfo> {
   }
 
   const isMobile = os === 'android' || os === 'ios';
+  const isDesktop = os === 'windows' || os === 'macos' || os === 'linux';
 
   // update memory cache
   memoryCache = {
     os,
     isMobile,
-    isDesktop: isTauri && !isMobile,
+    isDesktop,
     isTauri,
   };
 
