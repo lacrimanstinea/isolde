@@ -76,6 +76,15 @@ jobs:
           else
             bun --filter @isolde/tauri icon:preview
           fi
+      - name: Patch AndroidManifest.xml Activity Label
+        run: |
+          python3 -c '
+          import pathlib
+          manifest_path = pathlib.Path("core/tauri/src-tauri/gen/android/app/src/main/AndroidManifest.xml")
+          content = manifest_path.read_text()
+          content = content.replace("android:label=\"@string/main_activity_title\"", "android:label=\"@string/app_name\"")
+          manifest_path.write_text(content)
+          '
       - name: Create env file for app version and release state
         run: |
           echo "VITE_APP_VERSION=${{ inputs.version }}" >> core/app/.env
