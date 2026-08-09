@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "tauri dev",
     "build": "tauri build",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "icon:dev": "bunx tauri icon icons/iconDevelopment.svg",
+    "icon:release": "bunx tauri icon icons/iconRelease.svg",
+    "icon:preview": "bunx tauri icon icons/iconPreview.svg"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2"

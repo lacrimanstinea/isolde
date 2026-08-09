@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev:web": "bun --filter @isolde/app dev",
+    "dev:tauri:icons": "bun run --filter @isolde/tauri icon:dev",
     "dev:tauri:desktop": "concurrently -n web,desktop -c cyan,blue -k \"bun run dev:web\" \"bun --filter @isolde/tauri dev\"",
     "dev:tauri:desktop:verbose": "concurrently -n web,desktop -c cyan,blue -k \"bun run dev:web\" \"bun --filter @isolde/tauri dev -v\"",
     "dev:tauri:android": "concurrently -n web,android -c cyan,green -k \"bun run dev:web --host\" \"bun --filter @isolde/tauri tauri android dev\"",

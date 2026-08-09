@@ -34,11 +34,16 @@ jobs:
         with:
           key: android-universal
       - run: bun install
-      - name: Update app identifier and name for preview
-        if: "!inputs.is-release"
+      - name: Update app identifier and name based on release state
         run: |
-          sed -i 's/"identifier": "com.lacrimanstinea.isolde"/"identifier": "com.lacrimanstinea.isolde.preview"/g' core/tauri/src-tauri/tauri.conf.json
-          sed -i 's/"productName": "isolde"/"productName": "isoldeP"/g' core/tauri/src-tauri/tauri.conf.json
+          if [ "${{ inputs.is-release }}" == "true" ]; then
+            sed -i 's/"identifier": "com.lacrimanstinea.isolde.development"/"identifier": "com.lacrimanstinea.isolde"/g' core/tauri/src-tauri/tauri.conf.json
+            sed -i 's/"productName": "isoldeD"/"productName": "isolde"/g' core/tauri/src-tauri/tauri.conf.json
+          else
+            sed -i 's/"identifier": "com.lacrimanstinea.isolde.development"/"identifier": "com.lacrimanstinea.isolde.preview"/g' core/tauri/src-tauri/tauri.conf.json
+            sed -i 's/"productName": "isoldeD"/"productName": "isoldeP"/g' core/tauri/src-tauri/tauri.conf.json
+          fi
+
       - name: Set app version
         run: |
           jq --arg v "${{ inputs.version }}" '.version = $v' core/tauri/src-tauri/tauri.conf.json > /tmp/tauri.conf.json.tmp
@@ -50,7 +55,20 @@ jobs:
           cd core/tauri/src-tauri
           rm -rf gen/android
           bun run tauri android init
-          bun run tauri icon src-tauri/icons/icon.png
+          if [ "${{ inputs.is-release }}" == "true" ]; then
+            bun --filter @isolde/tauri icon:release
+          else
+            bun --filter @isolde/tauri icon:preview
+          fi
+      - name: Patch AndroidManifest.xml Activity Label
+        run: |
+          python3 -c '
+          import pathlib
+          manifest_path = pathlib.Path("core/tauri/src-tauri/gen/android/app/src/main/AndroidManifest.xml")
+          content = manifest_path.read_text()
+          content = content.replace("android:label=\"@string/main_activity_title\"", "android:label=\"@string/app_name\"")
+          manifest_path.write_text(content)
+          '
       - name: Create keystore for signing
         run: |
           mkdir -p core/tauri/src-tauri/gen/android
