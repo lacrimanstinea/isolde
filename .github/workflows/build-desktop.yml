@@ -76,13 +76,13 @@ jobs:
           if [ "${{ inputs.is-release }}" == "true" ]; then
             sed -i '' 's/"identifier": "com.lacrimanstinea.isolde.development"/"identifier": "com.lacrimanstinea.isolde"/g' core/tauri/src-tauri/tauri.conf.json 2>/dev/null || \
             sed -i 's/"identifier": "com.lacrimanstinea.isolde.development"/"identifier": "com.lacrimanstinea.isolde"/g' core/tauri/src-tauri/tauri.conf.json
-            sed -i '' 's/"productName": "isoldeDev"/"productName": "isolde"/g' core/tauri/src-tauri/tauri.conf.json 2>/dev/null || \
-            sed -i 's/"productName": "isoldeDev"/"productName": "isolde"/g' core/tauri/src-tauri/tauri.conf.json
+            sed -i '' 's/"productName": "isoldeD"/"productName": "isolde"/g' core/tauri/src-tauri/tauri.conf.json 2>/dev/null || \
+            sed -i 's/"productName": "isoldeD"/"productName": "isolde"/g' core/tauri/src-tauri/tauri.conf.json
           else
             sed -i '' 's/"identifier": "com.lacrimanstinea.isolde.development"/"identifier": "com.lacrimanstinea.isolde.preview"/g' core/tauri/src-tauri/tauri.conf.json 2>/dev/null || \
             sed -i 's/"identifier": "com.lacrimanstinea.isolde.development"/"identifier": "com.lacrimanstinea.isolde.preview"/g' core/tauri/src-tauri/tauri.conf.json
-            sed -i '' 's/"productName": "isoldeDev"/"productName": "isoldeP"/g' core/tauri/src-tauri/tauri.conf.json 2>/dev/null || \
-            sed -i 's/"productName": "isoldeDev"/"productName": "isoldeP"/g' core/tauri/src-tauri/tauri.conf.json
+            sed -i '' 's/"productName": "isoldeD"/"productName": "isoldeP"/g' core/tauri/src-tauri/tauri.conf.json 2>/dev/null || \
+            sed -i 's/"productName": "isoldeD"/"productName": "isoldeP"/g' core/tauri/src-tauri/tauri.conf.json
           fi
       - name: Patch Bundle ID and Name (Windows)
         if: matrix.platform == 'windows'
@@ -91,22 +91,21 @@ jobs:
           $content = Get-Content core/tauri/src-tauri/tauri.conf.json -Raw
           if ("${{ inputs.is-release }}" -eq "true") {
             $content = $content -replace '"identifier": "com.lacrimanstinea.isolde.development"', '"identifier": "com.lacrimanstinea.isolde"'
-            $content = $content -replace '"productName": "isoldeDev"', '"productName": "isolde"'
+            $content = $content -replace '"productName": "isoldeD"', '"productName": "isolde"'
           } else {
             $content = $content -replace '"identifier": "com.lacrimanstinea.isolde.development"', '"identifier": "com.lacrimanstinea.isolde.preview"'
-            $content = $content -replace '"productName": "isoldeDev"', '"productName": "isoldeP"'
+            $content = $content -replace '"productName": "isoldeD"', '"productName": "isoldeP"'
           }
           Set-Content core/tauri/src-tauri/tauri.conf.json -Value $content
       - name: Switch Icons and Initialize Mobile/Desktop Icons
-        env:
-          VITE_APP_VERSION: ${{ inputs.version }}
+        shell: pwsh
         run: |
-          cd core/tauri/src-tauri
-          if [ "${{ inputs.is-release }}" == "true" ]; then
+          Set-Location core/tauri/src-tauri
+          if ("${{ inputs.is-release }}" -eq "true") {
             bun --filter @isolde/tauri icon:release
-          else
+          } else {
             bun --filter @isolde/tauri icon:preview
-          fi
+          }
       - name: Create env file for app version and release state (POSIX)
         if: matrix.platform != 'windows'
         run: |

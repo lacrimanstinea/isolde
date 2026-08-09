@@ -47,7 +47,6 @@
       "hardenedRuntime": true,
       "minimumSystemVersion": "10.13"
     },
-    "createUpdaterArtifacts": true,
     "active": true,
     "targets": "all",
     "category": "Entertainment",

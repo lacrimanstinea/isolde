@@ -49,8 +49,6 @@ jobs:
           jq --arg v "${{ inputs.version }}" '.version = $v' core/tauri/src-tauri/tauri.conf.json > /tmp/tauri.conf.json.tmp
           mv /tmp/tauri.conf.json.tmp core/tauri/src-tauri/tauri.conf.json
       - name: Initialize Android Project and Regenerate Icons
-        env:
-          VITE_APP_VERSION: ${{ inputs.version }}
         run: |
           cd core/tauri/src-tauri
           rm -rf gen/android

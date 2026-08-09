@@ -29,19 +29,17 @@ jobs:
       - name: Update app identifier and name based on release state
         run: |
           if [ "${{ inputs.is-release }}" == "true" ]; then
-            sed -i 's/"identifier": "com.lacrimanstinea.isolde.development"/"identifier": "com.lacrimanstinea.isolde"/g' core/tauri/src-tauri/tauri.conf.json
-            sed -i 's/"productName": "isoldeD"/"productName": "isolde"/g' core/tauri/src-tauri/tauri.conf.json
+            sed -i '' 's/"identifier": "com.lacrimanstinea.isolde.development"/"identifier": "com.lacrimanstinea.isolde"/g' core/tauri/src-tauri/tauri.conf.json
+            sed -i '' 's/"productName": "isoldeD"/"productName": "isolde"/g' core/tauri/src-tauri/tauri.conf.json
           else
-            sed -i 's/"identifier": "com.lacrimanstinea.isolde.development"/"identifier": "com.lacrimanstinea.isolde.preview"/g' core/tauri/src-tauri/tauri.conf.json
-            sed -i 's/"productName": "isoldeD"/"productName": "isoldeP"/g' core/tauri/src-tauri/tauri.conf.json
+            sed -i '' 's/"identifier": "com.lacrimanstinea.isolde.development"/"identifier": "com.lacrimanstinea.isolde.preview"/g' core/tauri/src-tauri/tauri.conf.json
+            sed -i '' 's/"productName": "isoldeD"/"productName": "isoldeP"/g' core/tauri/src-tauri/tauri.conf.json
           fi
       - name: Set app version
         run: |
           jq --arg v "${{ inputs.version }}" '.version = $v' core/tauri/src-tauri/tauri.conf.json > /tmp/tauri.conf.json.tmp
           mv /tmp/tauri.conf.json.tmp core/tauri/src-tauri/tauri.conf.json
       - name: Initialize iOS Project and Regenerate Icons
-        env:
-          VITE_APP_VERSION: ${{ inputs.version }}
         run: |
           cd core/tauri/src-tauri
           rm -rf gen/apple
