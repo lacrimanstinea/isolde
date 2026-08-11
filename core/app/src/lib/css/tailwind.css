@@ -1,16 +1,16 @@
 /* src/lib/css/tailwind.css */
-@import 'tailwindcss';
-@import '@fontsource-variable/elms-sans';
+@import "tailwindcss";
+@import "@fontsource-variable/elms-sans";
 
 @theme {
-	--color-bg: #0D0009;
-	--color-text: #ffeef5;
-	--color-accent: #ef5d93;
-	--font-elms: 'Elms Sans Variable', sans-serif;
+  --color-bg: #0d0009;
+  --color-text: #ffeef5;
+  --color-accent: #ef5d93;
+  --font-elms: "Elms Sans Variable", sans-serif;
 }
 
 a {
-	color: var(--color-accent);
-	text-decoration-line: underline;
-	text-decoration-color: var(--color-accent);
+  color: var(--color-accent);
+  text-decoration-line: underline;
+  text-decoration-color: var(--color-accent);
 }
