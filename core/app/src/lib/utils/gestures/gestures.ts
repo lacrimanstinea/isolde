@@ -6,7 +6,7 @@ import {
   SWIPE_RATIO,
   GESTURE_THRESHOLD,
   REFRESH_THRESHOLD,
-} from "../constants/gestures";
+} from "$lib/utils/constants/gestures";
 
 /**
  * Retrieves the scrollable container element corresponding to the active page index.

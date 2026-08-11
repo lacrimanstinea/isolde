@@ -1,5 +1,5 @@
 import { platform as getTauriPlatform } from "@tauri-apps/plugin-os";
-import { STORAGE_KEYS } from "./constants/storage";
+import { STORAGE_KEYS } from "$lib/utils/constants/storage";
 
 export type SupportedPlatform =
   "windows" | "macos" | "linux" | "android" | "ios" | "web";
@@ -11,6 +11,7 @@ export type SupportedPlatform =
  * @property {boolean} isMobile - Whether the platform is a mobile environment
  * @property {boolean} isTauri - Whether the platform is a Tauri environment (use this to determine if you're on the web or tauri)
  */
+
 export interface PlatformInfo {
   os: SupportedPlatform;
   isDesktop: boolean;
@@ -18,6 +19,7 @@ export interface PlatformInfo {
   isTauri: boolean;
 }
 
+// constant so i don't need to rewrite the smae thing over and over im lazy
 const STORAGE_KEY = STORAGE_KEYS.PLATFORM;
 
 let memoryCache: PlatformInfo | null = null;

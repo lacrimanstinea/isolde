@@ -1,5 +1,12 @@
-import { NAVIGATION_ROUTES } from "./constants/routes.ts";
+import { NAVIGATION_ROUTES } from "$lib/utils/constants/routes";
 
+/**
+ * Returns the index of the route that matches the given pathname
+ * This function is not a global, it is mainly for internal use within the navigation system inside the / paths
+ *
+ * @param pathname
+ * @returns
+ */
 export function routeIndex(pathname: string): number {
   // matches '/library' and '/library/123' both to the 'library' index
   const idx = NAVIGATION_ROUTES.findIndex(
