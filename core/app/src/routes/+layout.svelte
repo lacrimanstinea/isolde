@@ -1,32 +1,29 @@
-<!-- src/routes/+layout.svelte -->
 <script lang="ts">
-    import '$lib/css/tailwind.css';
-    import { onMount } from 'svelte';
-    import TitleBar from '$lib/components/titleBar.svelte';
+  import "$lib/css/tailwind.css";
+  import { onMount } from "svelte";
+  import TitleBar from "$lib/components/titleBar.svelte";
+  import { platform, initPlatform } from "$lib/stores/platform";
 
-    import { getPlatform, type PlatformInfo } from '$lib/utils/platform';
-    let platform = $state<PlatformInfo | null>(null);
+  onMount(() => {
+    initPlatform();
+  });
 
-    onMount(async () => {
-        platform = await getPlatform();
-    });
-
-    let { children } = $props();
+  let { children } = $props();
 </script>
 
-<div class="h-screen w-screen bg-bg text-text flex flex-col m-0">
-    {#if platform?.isDesktop}
-        <TitleBar />
-    {/if}
-
-    <!-- extra styling for top and bottom padding on mobile -->
-    <main
-        class="font-elms flex-1 px-3 overflow-auto decoration-accent selection:bg-accent selection:text-bg accent-accent"
-        style={!platform?.isDesktop ? `
+<div class="bg-bg text-text m-0 flex h-screen w-screen flex-col">
+  {#if $platform?.isDesktop}
+    <TitleBar />
+  {/if}
+  <main
+    class="font-elms decoration-accent selection:bg-accent selection:text-bg accent-accent flex-1 overflow-auto px-3"
+    style={!$platform?.isDesktop
+      ? `
             padding-top: max(0.5rem, env(safe-area-inset-top));
             padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
-        ` : ''}
-    >
-        {@render children()}
-    </main>
+        `
+      : ""}
+  >
+    {@render children()}
+  </main>
 </div>
