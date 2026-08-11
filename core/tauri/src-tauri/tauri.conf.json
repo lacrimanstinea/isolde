@@ -38,15 +38,8 @@
     "homepage": "https://github.com/lacrimanstinea/isolde",
     "license": "GPL-3.0",
     "licenseFile": "../../../LICENSE",
-    "linux": {
-      "appimage": {
-        "bundleMediaFramework": true
-      }
-    },
-    "macOS": {
-      "hardenedRuntime": true,
-      "minimumSystemVersion": "10.13"
-    },
+    "linux": { "appimage": { "bundleMediaFramework": true } },
+    "macOS": { "hardenedRuntime": true, "minimumSystemVersion": "10.13" },
     "active": true,
     "targets": "all",
     "category": "Entertainment",
@@ -60,24 +53,12 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "android": {
-      "minSdkVersion": 24
-    },
-    "iOS": {
-      "minimumSystemVersion": "14.0"
-
-    },
+    "android": { "minSdkVersion": 24 },
+    "iOS": { "minimumSystemVersion": "14.0" },
     "windows": {
-
       "allowDowngrades": true,
-      "nsis": {
-        "installMode": "both",
-        "installerIcon": "icons/icon.ico"
-      },
-      "webviewInstallMode": {
-        "silent": true,
-        "type": "downloadBootstrapper"
-      }
+      "nsis": { "installMode": "both", "installerIcon": "icons/icon.ico" },
+      "webviewInstallMode": { "silent": true, "type": "downloadBootstrapper" }
     }
   }
 }
