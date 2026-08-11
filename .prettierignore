@@ -1,0 +1,16 @@
+# ignore tauri related
+**/target/**
+**/gen/**
+
+# build artifacts
+build
+coverage
+debug
+android
+ios
+apple
+
+# other stuff
+bun.lock
+.svelte-kit
+node_modules

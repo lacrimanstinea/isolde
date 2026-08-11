@@ -8,6 +8,7 @@ A unified media app for movies, TV shows, anime, manga, comics, and books — br
 [![License](https://img.shields.io/github/license/lacrimanstinea/isolde?style=flat-square)](https://github.com/lacrimanstinea/isolde/blob/main/LICENSE)
 
 ## Table of contents
+
 - [What is isolde?](#what-is-isolde)
 - [Key features](#key-features)
 - [Stuff used](#stuff-used)
@@ -19,10 +20,13 @@ A unified media app for movies, TV shows, anime, manga, comics, and books — br
 - [Contributing](#contributing)
 
 ## What is isolde?
+
 isolde is a cross-platform media hub designed to consolidate many media types and services into a single, privacy-minded app. the goal is to reduce context switching between multiple sites/apps by letting you bring your own sources and trackers, manage a single organized library, and sync across devices.
 
 ## Key features
+
 (all of these are basically what i plan to make anyway)
+
 - OFFLINE FIRST, YOU OWN YOUR DATA
 - Unified view for movies, TV shows, anime, manga, comics, and books
 - Bring-your-own-sources: add scrapers, feeds, or connectors to your preferred providers
@@ -32,7 +36,9 @@ isolde is a cross-platform media hub designed to consolidate many media types an
 - And well u get the jist
 
 ## Stuff used
+
 This repository mixes frontend, mobile, and backend/native components:
+
 - svelte - for the ui mobile/desktop
 - tailwind - for styling
 - tauri - desktop and android (ik webview sucks but tauri at least bundles smaller apps)
@@ -42,16 +48,18 @@ This repository mixes frontend, mobile, and backend/native components:
 ## Getting started
 
 ### Prerequisites
+
 - Bun
 - Rust (for tauri)
 - Android Studio (for the Android app) and a compatible JDK (17+)
 
 ### Quick start (development)
+
 1. initial setup
    - bun install
-the default port is 5173, don't really change it because it's how half the app works i think idk
+     the default port is 5173, don't really change it because it's how half the app works i think idk
 2. desktop (tauri)
-   - bun dev:tauri:desktop 
+   - bun dev:tauri:desktop
 3. android (tauri)
    - cd core/tauri
    - bunx tauri android init
@@ -62,19 +70,23 @@ the default port is 5173, don't really change it because it's how half the app w
    - bunx tauri android init (if you haven't already)
    - cd ../../
    - bun dev:all
-(this spins up web, android and desktop stuff)
+     (this spins up web, android and desktop stuff)
 
 to be honest i don't have an ios or macos device to test so i'm just hoping all of this works out of the box but i don't officially provide support since i literally can't test it nor do i care too much tbh
 
 ## Project structure
+
 - core/app - svelte frontend
 - core/tauri - tauri for desktop and mobile
 
 ## Configuration
+
 handled by the github actions im too lazy to go into it, just read the code
 
 ## Contributing
+
 We welcome contributions! Suggested workflow:
+
 1. Fork the repository and create a branch: feature/your-feature or fix/issue-123
 2. Keep changes focused and add tests where applicable
 3. Open a pull request describing the change and linking any relevant issues

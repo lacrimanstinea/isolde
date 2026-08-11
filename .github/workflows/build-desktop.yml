@@ -112,7 +112,7 @@ jobs:
         env:
           VITE_APP_VERSION: ${{ inputs.version }}
           VITE_IS_RELEASE: ${{ inputs.is-release }}
-          VITE_TYPE_OF_RELEASE: '${{ inputs.type-of-release }}'
+          VITE_TYPE_OF_RELEASE: "${{ inputs.type-of-release }}"
         run: |
           import os, pathlib
 
