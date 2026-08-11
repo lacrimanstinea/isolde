@@ -20,7 +20,7 @@
   >
     <LogoText />
     {#if !isRelease}
-      <span class="font-elms text-xs text-white opacity-100"
+      <span class="font-heading text-xs text-white opacity-100"
         >{isRelease ? appVersion : appVersion + "-" + typeOfRelease}</span
       >
     {/if}
