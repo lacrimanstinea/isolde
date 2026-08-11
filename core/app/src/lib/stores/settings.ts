@@ -1,5 +1,5 @@
 import { writable } from "svelte/store";
-import { PREFS_KEYS } from "../utils/constants/storage";
+import { PREFS } from "../utils/constants/preferences";
 
 function createBoolKey(key: string, defaultValue: boolean) {
   const stored =
@@ -20,10 +20,10 @@ function createBoolKey(key: string, defaultValue: boolean) {
 
 // i'll move this later into a different system to connect local prefs file and this, but for now it's fine
 export const allowDesktopSwipe = createBoolKey(
-  PREFS_KEYS.ALLOW_DESKTOP_SWIPE,
-  true,
+  PREFS.BEHAVIOUR.ALLOW_DESKTOP_SWIPE.STORAGE_KEY,
+  PREFS.BEHAVIOUR.ALLOW_DESKTOP_SWIPE.DEFAULT_VALUE,
 );
 export const allowPullToRefreshDesktop = createBoolKey(
-  PREFS_KEYS.ALLOW_PULL_TO_REFRESH_DESKTOP,
-  false,
+  PREFS.BEHAVIOUR.ALLOW_PULL_TO_REFRESH_DESKTOP.STORAGE_KEY,
+  PREFS.BEHAVIOUR.ALLOW_PULL_TO_REFRESH_DESKTOP.DEFAULT_VALUE,
 );

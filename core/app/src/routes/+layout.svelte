@@ -3,9 +3,11 @@
   import { onMount } from "svelte";
   import TitleBar from "$lib/components/titleBar.svelte";
   import { platform, initPlatform } from "$lib/stores/platform";
+  import { initFont } from "$lib/stores/font";
 
   onMount(() => {
     initPlatform();
+    initFont();
   });
 
   let { children } = $props();
@@ -16,7 +18,7 @@
     <TitleBar />
   {/if}
   <main
-    class="font-elms decoration-accent selection:bg-accent selection:text-bg accent-accent flex-1 overflow-auto px-3"
+    class="decoration-accent selection:bg-accent selection:text-bg accent-accent flex-1 overflow-auto px-3 font-sans"
     style={!$platform?.isDesktop
       ? `
             padding-top: max(0.5rem, env(safe-area-inset-top));
