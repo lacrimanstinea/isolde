@@ -1,6 +1,6 @@
 # isolde
 
-A unified media app for movies, TV shows, anime, manga, comics, and books — bring your own sources, connect trackers, organize your library, and keep everything together in one place.
+A unified media app for movies, TV shows, anime, manga, comics, and books, bring your own sources, connect trackers, organize your library, and keep everything together in one place.
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/2338858eca4c4265a0e1897ca7da5d63)](https://app.codacy.com/gh/lacrimanstinea/isolde/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![CI](https://github.com/lacrimanstinea/isolde/actions/workflows/build.yml/badge.svg)](https://github.com/lacrimanstinea/isolde/actions/workflows/build.yml)
@@ -30,7 +30,7 @@ isolde is a cross-platform media hub designed to consolidate many media types an
 - OFFLINE FIRST, YOU OWN YOUR DATA
 - Unified view for movies, TV shows, anime, manga, comics, and books
 - Bring-your-own-sources: add scrapers, feeds, or connectors to your preferred providers
-- Tracker integrations: connect existing tracker accounts (Anilist, MyAnimeLis)
+- Tracker integrations: connect existing tracker accounts (Anilist, MyAnimeList)
 - Local library organization + optional sync / cloud backends
 - Cross-platform UI (web & native clients)
 - And well u get the jist
@@ -39,19 +39,21 @@ isolde is a cross-platform media hub designed to consolidate many media types an
 
 This repository mixes frontend, mobile, and backend/native components:
 
-- svelte - for the ui mobile/desktop
-- tailwind - for styling
-- tauri - desktop and android (ik webview sucks but tauri at least bundles smaller apps)
-- typescript - i cant work without typings
-- Rust - for tauri
+- svelte, for the ui mobile/desktop
+- tailwind, for styling
+- tauri, desktop and android (ik webview sucks but tauri at least bundles smaller apps)
+- typescript, i cant work without typings
+- Rust, for tauri
 
 ## Getting started
 
 ### Prerequisites
 
-- Bun
-- Rust (for tauri)
+- Follow the tauri installation instructions https://tauri.app/start/prerequisites/
+- Bun https://bun.sh
+- Rust
 - Android Studio (for the Android app) and a compatible JDK (17+)
+- i am not entirely sure about the macos / ios side of things
 
 ### Quick start (development)
 
@@ -64,20 +66,19 @@ This repository mixes frontend, mobile, and backend/native components:
    - cd core/tauri
    - bunx tauri android init
    - cd ../../
-   - dev:tauri:android
+   - bun dev:tauri:android
+     (icon generation runs automatically on first launch if it's missing)
 4. all (what i do cuz im lazy)
-   - cd core/tauri
-   - bunx tauri android init (if you haven't already)
-   - cd ../../
    - bun dev:all
-     (this spins up web, android and desktop stuff)
+     (this spins up web, android and desktop stuff, same auto setup as above)
 
 to be honest i don't have an ios or macos device to test so i'm just hoping all of this works out of the box but i don't officially provide support since i literally can't test it nor do i care too much tbh
 
 ## Project structure
 
-- core/app - svelte frontend
-- core/tauri - tauri for desktop and mobile
+- core/app, svelte frontend
+- core/tauri, tauri for desktop and mobile
+- scripts, dev and build orchestration scripts (bun-based)
 
 ## Configuration
 
