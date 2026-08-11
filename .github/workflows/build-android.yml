@@ -1,5 +1,6 @@
 name: Build Android
-'on':
+
+"on":
   workflow_call:
     inputs:
       is-release:
@@ -19,7 +20,7 @@ name: Build Android
         required: true
 jobs:
   build:
-    name: '${{ matrix.name }}'
+    name: "${{ matrix.name }}"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -57,11 +58,11 @@ jobs:
           bun-version: latest
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: '${{ matrix.rust-target }}'
+          targets: "${{ matrix.rust-target }}"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
       - uses: android-actions/setup-android@v3
       - run: |
           sdkmanager "ndk;27.0.12077973"
@@ -69,7 +70,7 @@ jobs:
           echo "NDK_HOME=$ANDROID_HOME/ndk/27.0.12077973" >> $GITHUB_ENV
       - uses: Swatinem/rust-cache@v2
         with:
-          key: 'android-${{ matrix.name }}'
+          key: "android-${{ matrix.name }}"
       - run: bun install
       - name: Update app identifier and name
         shell: bash
@@ -207,9 +208,9 @@ jobs:
           fi
       - name: Build APK
         env:
-          VITE_APP_VERSION: '${{ inputs.version }}'
-          VITE_IS_RELEASE: '${{ inputs.is-release }}'
-          VITE_TYPE_OF_RELEASE: '${{ inputs.type-of-release }}'
+          VITE_APP_VERSION: "${{ inputs.version }}"
+          VITE_IS_RELEASE: "${{ inputs.is-release }}"
+          VITE_TYPE_OF_RELEASE: "${{ inputs.type-of-release }}"
         run: |
           cd core/tauri/src-tauri
           if [ "${{ matrix.type }}" == "split" ]; then
@@ -219,7 +220,7 @@ jobs:
           fi
       - uses: actions/upload-artifact@v4
         with:
-          name: 'android-${{ matrix.name }}'
+          name: "android-${{ matrix.name }}"
           path: |
             core/tauri/src-tauri/gen/android/app/build/outputs/apk/**/*.apk
           if-no-files-found: error

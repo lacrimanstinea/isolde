@@ -2,6 +2,11 @@
   "name": "isolde",
   "private": true,
   "scripts": {
+    "prepare": "husky",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "dev:web": "bun --filter @isolde/app dev",
     "dev:tauri:icons": "bun run --filter @isolde/tauri icon:dev",
     "dev:tauri:desktop": "concurrently -n web,desktop -c cyan,blue -k \"bun run dev:web\" \"bun --filter @isolde/tauri dev\"",
@@ -16,13 +21,32 @@
     "build:android:apk": "bun --filter @isolde/tauri tauri android build --apk",
     "build:all": "bun run build:desktop && bun run build:android:aab"
   },
+  "lint-staged": {
+    "*.{js,ts,svelte}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,md}": "prettier --write"
+  },
   "workspaces": [
     "core/*",
     "shared/*"
   ],
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "concurrently": "^10.0.4",
-    "cross-env": "^7.0.3"
+    "cross-env": "^7.0.3",
+    "eslint": "^10.8.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-svelte": "^3.22.0",
+    "globals": "^17.9.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.3.0",
+    "prettier": "^3.9.6",
+    "prettier-plugin-svelte": "^4.1.1",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "svelte-eslint-parser": "^1.8.0",
+    "typescript-eslint": "^8.67.0"
   },
   "dependencies": {
     "@types/node": "^26.1.2"

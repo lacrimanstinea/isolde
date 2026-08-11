@@ -65,7 +65,7 @@ jobs:
           cd core/tauri/src-tauri
           INPUT_TYPE="${{ inputs.type-of-release }}"
           ICON_TYPE="$INPUT_TYPE"
-          
+
           if [ "$INPUT_TYPE" = "stable" ]; then
             ICON_TYPE="release"
           elif [ -z "$ICON_TYPE" ]; then
@@ -81,7 +81,7 @@ jobs:
         env:
           VITE_APP_VERSION: ${{ inputs.version }}
           VITE_IS_RELEASE: ${{ inputs.is-release }}
-          VITE_TYPE_OF_RELEASE: '${{ inputs.type-of-release }}'
+          VITE_TYPE_OF_RELEASE: "${{ inputs.type-of-release }}"
         run: |
           cd core/tauri/src-tauri
           bun run tauri ios build --no-sign

@@ -1,0 +1,16 @@
+{
+  "useTabs": false,
+  "singleQuote": false,
+  "quoteProps": "as-needed",
+  "trailingComma": "all",
+  "bracketSpacing": true,
+  "printWidth": 80,
+  "objectWrap": "collapse",
+  "bracketSameLine": false,
+  "arrowParens": "always",
+  "svelteAllowShorthand": true,
+
+  "semi": true,
+  "plugins": ["prettier-plugin-svelte", "prettier-plugin-tailwindcss"],
+  "overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }]
+}
