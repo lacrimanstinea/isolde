@@ -2,7 +2,6 @@
 
 A unified media app for movies, TV shows, anime, manga, comics, and books, bring your own sources, connect trackers, organize your library, and keep everything together in one place.
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/2338858eca4c4265a0e1897ca7da5d63)](https://app.codacy.com/gh/lacrimanstinea/isolde/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![CI](https://github.com/lacrimanstinea/isolde/actions/workflows/build.yml/badge.svg)](https://github.com/lacrimanstinea/isolde/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/lacrimanstinea/isolde?style=flat-square)](https://github.com/lacrimanstinea/isolde/releases)
 [![License](https://img.shields.io/github/license/lacrimanstinea/isolde?style=flat-square)](https://github.com/lacrimanstinea/isolde/blob/main/LICENSE)
