@@ -32,7 +32,7 @@ isolde is a cross-platform media hub designed to consolidate many media types an
 - Bring-your-own-sources: add scrapers, feeds, or connectors to your preferred providers
 - Tracker integrations: connect existing tracker accounts (Anilist, MyAnimeList)
 - Local library organization + optional sync / cloud backends
-- Cross-platform UI (web & native clients)
+- Cross-platform UI (built on svelte, just trying to keep it consistent)
 - And well u get the jist
 
 ## Stuff used
