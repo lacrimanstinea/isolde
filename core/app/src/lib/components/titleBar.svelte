@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getCurrentWindow } from "@tauri-apps/api/window";
-  import { Minus, Diamond, X } from "lucide-svelte";
+  import { Minus, Diamond, X } from "@lucide/svelte";
   import LogoText from "$lib/assets/logoText.svelte";
   const appWindow = getCurrentWindow();
 
@@ -57,8 +57,8 @@
       aria-label="Close"
     >
       <X
-        size={12}
-        strokeWidth={1.5}
+        size={14}
+        strokeWidth={1.3}
         class="transition-transform duration-150 group-hover:scale-125"
       />
     </button>
