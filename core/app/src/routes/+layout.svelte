@@ -1,5 +1,5 @@
 <script lang="ts">
-  import "$lib/css/tailwind.css";
+  import "$lib/css/app.css";
   import { onMount } from "svelte";
   import TitleBar from "$lib/components/titleBar.svelte";
   import { platform, initPlatform } from "$lib/stores/platform";

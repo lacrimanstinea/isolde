@@ -1,4 +1,43 @@
 {
   "name": "@isolde/ui",
-  "private": true
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "svelte": "./src/lib/index.ts",
+  "exports": {
+    ".": {
+      "svelte": "./src/lib/index.ts",
+      "default": "./src/lib/index.ts"
+    },
+    "./tailwind.css": "./src/lib/tailwind.css",
+    "./components/*": {
+      "svelte": "./src/lib/components/*",
+      "default": "./src/lib/components/*"
+    },
+    "./hooks/*": "./src/lib/hooks/*",
+    "./utils": "./src/lib/utils.ts"
+  },
+  "dependencies": {
+    "@fontsource-variable/dm-sans": "^5.3.0",
+    "@fontsource-variable/elms-sans": "^5.3.0",
+    "@fontsource-variable/instrument-sans": "^5.3.0",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/lexend": "^5.3.0",
+    "@fontsource-variable/manrope": "^5.3.0",
+    "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
+    "@fontsource/atkinson-hyperlegible": "^5.3.0",
+    "@fontsource/opendyslexic": "^5.3.0",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.6.0",
+    "tailwind-variants": "^3.3.1",
+    "tw-animate-css": "^1.4.0"
+  },
+  "devDependencies": {
+    "add": "^2.0.9",
+    "shadcn-svelte": "^1.5.0"
+  },
+  "peerDependencies": {
+    "svelte": "^5.0.0",
+    "tailwindcss": "^4.0.0"
+  }
 }

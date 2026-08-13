@@ -14,6 +14,7 @@
     "dev:tauri:android": "bun scripts/dev.ts android",
     "dev:tauri:android:verbose": "bun scripts/dev.ts android --verbose",
     "dev:all": "bun scripts/dev.ts all",
+    "ui:add": "bunx --cwd core/ui shadcn-svelte add",
     "dev:all:verbose": "bun scripts/dev.ts all --verbose",
     "build:desktop": "bun scripts/build.ts desktop",
     "build:android:aab": "bun scripts/build.ts android-aab",

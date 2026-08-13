@@ -1,7 +1,7 @@
-/* src/lib/css/tailwind.css */
 @import "tailwindcss";
 @import "@fontsource-variable/elms-sans";
 @import "@fontsource-variable/instrument-sans";
+@import "@fontsource-variable/outfit";
 @import "@fontsource-variable/inter";
 @import "@fontsource-variable/dm-sans";
 @import "@fontsource-variable/manrope";
@@ -25,6 +25,7 @@
   --font-roboto: "Roboto", sans-serif;
   --font-elms: "Elms Sans Variable", sans-serif;
   --font-instrument: "Instrument Sans Variable", sans-serif;
+  --font-outfit: "Outfit Variable", sans-serif;
   --font-inter: "Inter Variable", sans-serif;
   --font-dm-sans: "DM Sans Variable", sans-serif;
   --font-manrope: "Manrope Variable", sans-serif;

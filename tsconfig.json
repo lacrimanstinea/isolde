@@ -36,6 +36,7 @@
     "core/app/src/**/*.js",
     "core/app/src/**/*.svelte",
     "core/app/.svelte-kit/ambient.d.ts",
-    "core/app/.svelte-kit/types/**/$types.d.ts"
+    "core/app/.svelte-kit/types/**/$types.d.ts",
+    "shared/ui/src/utils.ts"
   ]
 }
