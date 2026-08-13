@@ -1,18 +1,14 @@
 {
   "name": "@isolde/ui",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "svelte": "./src/lib/index.ts",
-  "scripts": {
-    "shadcn:add": "shadcn-svelte add"
-  },
   "exports": {
     ".": {
       "svelte": "./src/lib/index.ts",
       "default": "./src/lib/index.ts"
     },
-    "./tailwind.css": "./src/lib/tailwind.css",
+    "./tailwind.css": "./src/lib/css/tailwind.css",
     "./components/*": {
       "svelte": "./src/lib/components/*",
       "default": "./src/lib/components/*"
@@ -27,6 +23,7 @@
     "@fontsource-variable/inter": "^5.3.0",
     "@fontsource-variable/lexend": "^5.3.0",
     "@fontsource-variable/manrope": "^5.3.0",
+    "@fontsource-variable/outfit": "^5.3.0",
     "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
     "@fontsource/atkinson-hyperlegible": "^5.3.0",
     "@fontsource/opendyslexic": "^5.3.0",

@@ -1,4 +1,7 @@
 @import "tailwindcss";
+
+@source "../";
+
 @import "@fontsource-variable/elms-sans";
 @import "@fontsource-variable/instrument-sans";
 @import "@fontsource-variable/outfit";
