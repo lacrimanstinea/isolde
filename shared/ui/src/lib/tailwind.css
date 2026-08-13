@@ -21,7 +21,8 @@
   --color-accent: #ef5d93;
 
   /* fonts */
-  --font-system: system-ui, sans-serif;
+  --font-system:
+    system-ui, sans-serif; /* doesn't work, not sure how to fix since mobile default font isn't generally exposed to the webview i'm pretty sure, i'll figure it out eventually... maybe*/
   --font-roboto: "Roboto", sans-serif;
   --font-elms: "Elms Sans Variable", sans-serif;
   --font-instrument: "Instrument Sans Variable", sans-serif;
@@ -37,7 +38,7 @@
   --font-opendyslexic: "OpenDyslexic", sans-serif;
 
   /* the active fonts for the user, can be modified in the settings (todo) */
-  --font-sans: var(--font-system);
+  --font-sans: var(--font-elms);
   --font-heading: var(--font-elms);
 
   /* shadcn stuff */

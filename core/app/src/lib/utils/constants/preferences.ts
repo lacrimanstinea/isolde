@@ -3,9 +3,13 @@ import { buildPrefs, type BuildPrefs } from "../../utils/functions/buildPrefs";
 
 /**
  * Font options for the custom font selector. (todo)
+ *
+ * Label is the human-readable name of the font (e.g. "ELMS")
+ * Value is the CSS variable name for the font (e.g. `var(--font-elms)`)
  */
 export const FONT_OPTIONS = [
-  { label: "System", value: "var(--font-system)" },
+  { label: "ELMS", value: "var(--font-elms)" },
+  // { label: "System", value: "var(--font-system)" }, // disabled because platforms don't really expose the system font to webview
   { label: "Roboto", value: "var(--font-roboto)" },
   { label: "Instrument Sans", value: "var(--font-instrument)" },
   { label: "Inter", value: "var(--font-inter)" },
@@ -28,7 +32,7 @@ const PREFS_SCHEMA = {
   },
   CUSTOMIZATION: {
     //
-    UI_FONT: "var(--font-system)",
+    UI_FONT: "var(--font-elms)",
   },
 } as const;
 
