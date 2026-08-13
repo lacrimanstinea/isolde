@@ -4,6 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "svelte": "./src/lib/index.ts",
+  "scripts": {
+    "shadcn:add": "shadcn-svelte add"
+  },
   "exports": {
     ".": {
       "svelte": "./src/lib/index.ts",

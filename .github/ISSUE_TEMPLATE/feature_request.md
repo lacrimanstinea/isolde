@@ -1,11 +1,10 @@
 ---
 name: Feature request
 about: Suggest an idea for the app
-title: ''
+title: ""
 labels: request
-assignees: ''
+assignees: ""
 type: Feature
-
 ---
 
 **Is your feature request related to a problem? Please describe.**
