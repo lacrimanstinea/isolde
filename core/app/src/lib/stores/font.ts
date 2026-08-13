@@ -7,29 +7,30 @@ const DEFAULT_CUSTOM = PREFS.CUSTOMIZATION.UI_FONT.DEFAULT_VALUE;
 export const fontCustom = writable<string>(DEFAULT_CUSTOM);
 
 /**
- * Initializes the font store, loading the custom font from local storage
- */
-export function initFont() {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  const value = stored ?? DEFAULT_CUSTOM;
-  fontCustom.set(value);
-  applyFont(value);
-}
-
-/**
  * Sets the custom font to the given value
  */
-export function setFontCustom(value: string) {
+export function setFont(value: string) {
   fontCustom.set(value);
   localStorage.setItem(STORAGE_KEY, value);
   applyFont(value);
 }
 
 /**
+ * Initializes the font store, loading the custom font from local storage
+ */
+export function initFont() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  const font = stored ?? DEFAULT_CUSTOM;
+  if (!stored) return setFont(font);
+  // if first time just set to default
+  applyFont(font);
+}
+
+/**
  * Resets the custom font to the default value
  */
-export function resetFontCustom() {
-  setFontCustom(DEFAULT_CUSTOM);
+export function resetFont() {
+  setFont(DEFAULT_CUSTOM);
 }
 
 /**
