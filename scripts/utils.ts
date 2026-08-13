@@ -132,7 +132,7 @@ export async function ensurePortFree(port: number, force: boolean) {
     console.error(
       `[setup] Port ${port} is already in use. Something else may be running, ` +
         `or a previous dev session didn't shut down cleanly. ` +
-        `Re-run with --force-port to kill whatever's using it.`,
+        `Re-run with --force to kill whatever process is using it.`,
     );
     process.exit(1);
   }
