@@ -38,6 +38,13 @@ runs:
                 endpoint = "https://github.com/lacrimanstinea/isolde/releases/latest/download/latest.json"
             else:
                 endpoint = f"https://github.com/lacrimanstinea/isolde/releases/download/{type_of_release}/latest.json"
+
+            # ensure the nested dictionaries exist to prevent errors
+            if "plugins" not in data:
+                data["plugins"] = {}
+            if "updater" not in data["plugins"]:
+                data["plugins"]["updater"] = {}
+
             data["plugins"]["updater"]["endpoints"] = [endpoint]
 
         config_path.write_text(json.dumps(data, indent=2), encoding="utf-8")

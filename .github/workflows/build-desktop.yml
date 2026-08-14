@@ -18,34 +18,46 @@ on:
       product-name:
         type: string
         required: true
-    secrets:
-      TAURI_SIGNING_PRIVATE_KEY:
-        required: true
-      TAURI_SIGNING_PRIVATE_KEY_PASSWORD:
-        required: true
 
 jobs:
   build:
     name: ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: write
     strategy:
       fail-fast: false
       matrix:
         include:
           - platform: macos
             os: macos-latest
+            artifact-name: macos-universal
             targets: aarch64-apple-darwin, x86_64-apple-darwin
-            args: --target universal-apple-darwin
+            build-cmd: bun --filter @isolde/tauri tauri build --target universal-apple-darwin
+            artifact-path: |
+              core/tauri/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+              core/tauri/src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
+              core/tauri/src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz.sig
           - platform: linux
             os: ubuntu-latest
+            artifact-name: linux
             targets: ""
-            args: ""
+            build-cmd: bun --filter @isolde/tauri tauri build
+            artifact-path: |
+              core/tauri/src-tauri/target/release/bundle/deb/*.deb
+              core/tauri/src-tauri/target/release/bundle/deb/*.deb.sig
+              core/tauri/src-tauri/target/release/bundle/appimage/*.AppImage
+              core/tauri/src-tauri/target/release/bundle/appimage/*.AppImage.sig
+              core/tauri/src-tauri/target/release/bundle/rpm/*.rpm
+              core/tauri/src-tauri/target/release/bundle/rpm/*.rpm.sig
           - platform: windows
             os: windows-latest
+            artifact-name: windows
             targets: ""
-            args: ""
+            build-cmd: bun --filter @isolde/tauri tauri build
+            artifact-path: |
+              core/tauri/src-tauri/target/release/bundle/msi/*.msi
+              core/tauri/src-tauri/target/release/bundle/msi/*.msi.sig
+              core/tauri/src-tauri/target/release/bundle/nsis/*.exe
+              core/tauri/src-tauri/target/release/bundle/nsis/*.exe.sig
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -63,7 +75,6 @@ jobs:
         with:
           key: ${{ matrix.platform }}
       - run: bun install
-
       - name: Patch tauri.conf.json
         uses: ./.github/actions/patch-tauri-config
         with:
@@ -72,53 +83,19 @@ jobs:
           version: ${{ inputs.version }}
           type-of-release: ${{ inputs.type-of-release }}
           set-updater-endpoint: "true"
-
       - name: Regenerate Icons
         uses: ./.github/actions/regen-icons
         with:
           type-of-release: ${{ inputs.type-of-release }}
-
-      - name: Create env file for app version and release state
-        shell: python
+      - name: Build Application
         env:
           VITE_APP_VERSION: ${{ inputs.version }}
           VITE_IS_RELEASE: ${{ inputs.is-release }}
-        run: |
-          import os, pathlib
-
-          env_path = pathlib.Path("core/app/.env")
-          env_path.parent.mkdir(parents=True, exist_ok=True)
-
-          content = f"VITE_APP_VERSION={os.environ['VITE_APP_VERSION']}\nVITE_IS_RELEASE={os.environ['VITE_IS_RELEASE']}\n"
-          env_path.write_text(content, encoding="utf-8")
-
-      - name: Compute tag and release name
-        id: release-meta
-        shell: bash
-        run: |
-          VERSION="${{ inputs.version }}"
-          IS_RELEASE="${{ inputs.is-release }}"
-          TYPE_OF_RELEASE="${{ inputs.type-of-release }}"
-
-          if [ "$IS_RELEASE" == "true" ]; then
-            echo "tag-name=v${VERSION}" >> $GITHUB_OUTPUT
-            echo "release-name=isolde ${VERSION}" >> $GITHUB_OUTPUT
-          else
-            echo "tag-name=v${VERSION}-${TYPE_OF_RELEASE}" >> $GITHUB_OUTPUT
-            echo "release-name=isolde ${VERSION}-${TYPE_OF_RELEASE}" >> $GITHUB_OUTPUT
-          fi
-
-      - uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          VITE_APP_VERSION: ${{ inputs.version }}
-          VITE_IS_RELEASE: ${{ inputs.is-release }}
+        run: ${{ matrix.build-cmd }}
+      - uses: actions/upload-artifact@v4
         with:
-          projectPath: core/tauri
-          tagName: ${{ steps.release-meta.outputs.tag-name }}
-          releaseName: ${{ steps.release-meta.outputs.release-name }}
-          releaseDraft: true
-          prerelease: ${{ inputs.is-release != true }}
-          args: ${{ matrix.args }}
+          name: ${{ matrix.artifact-name }}
+          path: ${{ matrix.artifact-path }}
+          retention-days: 1

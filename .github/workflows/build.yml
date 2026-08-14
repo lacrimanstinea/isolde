@@ -4,13 +4,11 @@ on:
   push:
     branches:
       - main
-      - preview
     tags:
       - "v*"
   pull_request:
     branches:
       - main
-      - preview
 
 env:
   CARGO_INCREMENTAL: 0
@@ -178,6 +176,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
@@ -222,10 +221,28 @@ jobs:
           app=$(find artifacts/ios -type f -name "*.app" -print -quit 2>/dev/null || true)
           [ -n "$app" ] && cp "$app" "release/${PREFIX}-ios_${VERSION}.app"
 
+      - name: Save Desktop artifacts
+        run: |
+          find artifacts -type f \( -name "*.dmg" -o -name "*.app.tar.gz" -o -name "*.deb" -o -name "*.AppImage" -o -name "*.rpm" -o -name "*.msi" -o -name "*.exe" -o -name "*.sig" \) -exec cp {} release/ \;
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install tauri-latest-json
+        run: cargo install tauri-latest-json
+
+      - name: Generate latest.json
+        run: |
+          BASE_URL="https://github.com/${{ github.repository }}/releases/download/${{ needs.prepare.outputs.tag-name }}"
+          tauri-latest-json ./release "$BASE_URL"
+          cp latest.json release/
+
       - name: Set up Android build-tools
         uses: android-actions/setup-android@v3
+
       - name: Install Android build-tools
         run: sdkmanager "build-tools;34.0.0"
+
       - name: Verify all APKs are release-signed
         run: |
           APKSIGNER="$ANDROID_HOME/build-tools/34.0.0/apksigner"
@@ -252,22 +269,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Mirror desktop assets to rolling channel release (for auto-update)
+      - name: Update rolling channel with latest.json
         if: needs.prepare.outputs.is-release != 'true'
         run: |
           CHANNEL="${{ needs.prepare.outputs.type-of-release }}"
-          mkdir -p desktop-assets
-          gh release download "${{ needs.prepare.outputs.tag-name }}" --dir desktop-assets \
-            --pattern "*.dmg" --pattern "*.app.tar.gz" --pattern "*.deb" \
-            --pattern "*.AppImage" --pattern "*.rpm" --pattern "*.msi" \
-            --pattern "*.exe" --pattern "*.sig" --pattern "latest.json"
 
           gh release view "$CHANNEL" >/dev/null 2>&1 || \
           gh release create "$CHANNEL" \
             --title "isolde ($CHANNEL channel)" \
-            --notes "Rolling release providing the latest $CHANNEL auto-update manifest. Not for direct download." \
+            --notes "Rolling channel holding the latest $CHANNEL auto-update manifest." \
             --prerelease
 
-          gh release upload "$CHANNEL" desktop-assets/* --clobber
+          gh release upload "$CHANNEL" release/latest.json --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
