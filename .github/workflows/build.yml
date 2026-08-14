@@ -236,12 +236,6 @@ jobs:
       - name: Install tauri-latest-json
         run: cargo install tauri-latest-json
 
-      - name: Generate latest.json
-        run: |
-          BASE_URL="https://github.com/${{ github.repository }}/releases/download/${{ needs.prepare.outputs.tag-name }}"
-          tauri-latest-json ./release "$BASE_URL"
-          cp latest.json release/
-
       - name: Set up Android build-tools
         uses: android-actions/setup-android@v3
 
@@ -284,6 +278,10 @@ jobs:
             --title "isolde ($CHANNEL channel)" \
             --notes "Rolling channel holding the latest $CHANNEL auto-update manifest." \
             --prerelease
+
+          # download the latest.json from build-desktop
+          gh release download "${{ needs.prepare.outputs.tag-name }}" -p "latest.json" -O release/latest.json || \
+          echo "Warning: latest.json not found in release"
 
           gh release upload "$CHANNEL" release/latest.json --clobber
         env:

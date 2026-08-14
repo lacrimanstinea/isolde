@@ -18,6 +18,10 @@ on:
       product-name:
         type: string
         required: true
+    outputs:
+      latest-json-path:
+        description: "Path to the generated latest.json"
+        value: ${{ jobs.generate-manifest.outputs.latest-json }}
 
 jobs:
   build:
@@ -98,4 +102,53 @@ jobs:
         with:
           name: ${{ matrix.artifact-name }}
           path: ${{ matrix.artifact-path }}
+          retention-days: 1
+
+  generate-manifest:
+    needs: build
+    runs-on: ubuntu-latest
+    outputs:
+      latest-json: ${{ steps.gen.outputs.latest-json }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: downloaded-artifacts
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install tauri-latest-json
+        run: cargo install tauri-latest-json
+
+      - name: Generate latest.json
+        id: gen
+        run: |
+          mkdir -p core/tauri/src-tauri/target/release/bundle/
+          mkdir -p core/tauri/src-tauri/target/universal-apple-darwin/release/bundle/
+
+          cp -r downloaded-artifacts/windows/* core/tauri/src-tauri/target/release/bundle/ 2>/dev/null || true
+          cp -r downloaded-artifacts/linux/* core/tauri/src-tauri/target/release/bundle/ 2>/dev/null || true
+          cp -r downloaded-artifacts/macos-universal/* core/tauri/src-tauri/target/universal-apple-darwin/release/bundle/ 2>/dev/null || true
+
+          if [ "${{ inputs.type-of-release }}" = "stable" ] || [ "${{ inputs.type-of-release }}" = "release" ]; then
+            TAG="latest"
+          else
+            TAG="v${{ inputs.version }}-${{ inputs.type-of-release }}"
+          fi
+
+          BASE_URL="https://github.com/${{ github.repository }}/releases/download/$TAG"
+
+          cd core/tauri/src-tauri
+          tauri-latest-json "$BASE_URL" "See GitHub releases page for release notes."
+          mv latest.json ../../../latest.json
+          cd ../../..
+
+          echo "latest-json=latest.json" >> $GITHUB_OUTPUT
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-latest-json
+          path: latest.json
           retention-days: 1
