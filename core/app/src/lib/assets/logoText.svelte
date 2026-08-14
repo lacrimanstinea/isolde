@@ -1,5 +1,5 @@
 <svg
-  class="fill-accent h-full w-auto"
+  class="fill-primary h-full w-auto"
   viewBox="0 0 130 25"
   fill="none"
   xmlns="http://www.w3.org/2000/svg"

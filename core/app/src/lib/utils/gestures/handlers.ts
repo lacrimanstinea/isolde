@@ -1,6 +1,26 @@
-import { startGesture, moveGesture, endGesture } from "./gestures";
+import {
+  startGesture,
+  moveGesture,
+  endGesture,
+  cancelGesture,
+} from "./gestures";
 import { triggerRefresh } from "./refresh";
 import type { NavigationGestureConfig } from "./types";
+
+const INTERACTIVE_SELECTOR =
+  "input, button, select, textarea, a, label, [role='button'], [contenteditable='true']";
+
+function isInteractiveTarget(e: PointerEvent | TouchEvent): boolean {
+  const target = e.target as HTMLElement | null;
+  return !!target?.closest(INTERACTIVE_SELECTOR);
+}
+
+function hasActiveTextSelection(): boolean {
+  const selection = window.getSelection?.();
+  return (
+    !!selection && !selection.isCollapsed && selection.toString().length > 0
+  );
+}
 
 /**
  * Creates DOM event handler functions tailored for touch (mobile) and pointer (desktop) inputs.
@@ -17,7 +37,12 @@ export function createNavigationGestures(config: NavigationGestureConfig) {
   return {
     // Mobile environment
     handleTouchStart(e: TouchEvent) {
-      if (config.getIsDesktop() || e.touches.length !== 1) return;
+      if (
+        config.getIsDesktop() ||
+        e.touches.length !== 1 ||
+        isInteractiveTarget(e)
+      )
+        return;
       startGesture(
         e.touches[0].clientX,
         e.touches[0].clientY,
@@ -30,6 +55,10 @@ export function createNavigationGestures(config: NavigationGestureConfig) {
 
     handleTouchMove(e: TouchEvent) {
       if (config.getIsDesktop()) return;
+      if (hasActiveTextSelection()) {
+        cancelGesture(config.state);
+        return;
+      }
       moveGesture(
         e.touches[0].clientX,
         e.touches[0].clientY,
@@ -57,7 +86,12 @@ export function createNavigationGestures(config: NavigationGestureConfig) {
 
     // Desktop environment
     handlePointerDown(e: PointerEvent) {
-      if (!config.getIsDesktop() || e.button !== 0 || e.pointerType === "touch")
+      if (
+        !config.getIsDesktop() ||
+        e.button !== 0 ||
+        e.pointerType === "touch" ||
+        isInteractiveTarget(e)
+      )
         return;
       if (
         startGesture(
@@ -75,6 +109,10 @@ export function createNavigationGestures(config: NavigationGestureConfig) {
 
     handlePointerMove(e: PointerEvent) {
       if (!config.getIsDesktop() || e.pointerType === "touch") return;
+      if (hasActiveTextSelection()) {
+        cancelGesture(config.state);
+        return;
+      }
       moveGesture(
         e.clientX,
         e.clientY,

@@ -1,12 +1,12 @@
 import { goto } from "$app/navigation";
 import { resolve } from "$app/paths";
-import { NAVIGATION_ROUTES } from "$lib/utils/constants/routes";
+import { NAVIGATION_ROUTES } from "@isolde/constants";
 import { type GestureState } from "./types";
 import {
   SWIPE_RATIO,
   GESTURE_THRESHOLD,
   REFRESH_THRESHOLD,
-} from "$lib/utils/constants/gestures";
+} from "@isolde/constants";
 
 /**
  * Retrieves the scrollable container element corresponding to the active page index.
@@ -108,6 +108,19 @@ export function moveGesture(
       state.pullDownOffset = 0;
     }
   }
+}
+
+/**
+ * Immediately resets gesture state without triggering navigation or refresh —
+ * used when a gesture needs to be aborted (e.g. text selection detected mid-drag).
+ */
+export function cancelGesture(state: GestureState) {
+  state.tracking = false;
+  state.dragging = false;
+  state.isHorizontalSwipe = false;
+  state.isPullToRefresh = false;
+  state.dragOffset = 0;
+  if (!state.isRefreshing) state.pullDownOffset = 0;
 }
 
 /**

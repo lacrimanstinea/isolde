@@ -18,7 +18,7 @@
   <!-- stick to top -->
   <div>
     <h1 class="text-8xl">first official release</h1>
-    <h2 class="text-accent text-9xl font-thin italic">
+    <h2 class="text-primary text-9xl font-thin italic">
       {appVersion + (isRelease ? "" : "-" + typeOfRelease)}
     </h2>
     <p>i call it release, but it's just to test github actions really</p>
@@ -33,7 +33,7 @@
     <p>
       <br />
     </p>
-    <a class="text-accent underline" href={resolve("/library")}>
+    <a class="text-primary underline" href={resolve("/library")}>
       go to test swipe navigation
     </a>
   </div>

@@ -1,11 +1,12 @@
-import { STORAGE_KEYS } from "./storage";
-import { buildPrefs, type BuildPrefs } from "../../utils/functions/buildPrefs";
-
 /**
  * Font options for the custom font selector. (todo)
+ *
+ * Label is the human-readable name of the font (e.g. "ELMS")
+ * Value is the CSS variable name for the font (e.g. `var(--font-elms)`)
  */
 export const FONT_OPTIONS = [
-  { label: "System", value: "var(--font-system)" },
+  { label: "ELMS", value: "var(--font-elms)" },
+  // { label: "System", value: "var(--font-system)" }, // disabled because platforms don't really expose the system font to webview
   { label: "Roboto", value: "var(--font-roboto)" },
   { label: "Instrument Sans", value: "var(--font-instrument)" },
   { label: "Inter", value: "var(--font-inter)" },
@@ -19,20 +20,3 @@ export const FONT_OPTIONS = [
   },
   { label: "OpenDyslexic", value: "var(--font-opendyslexic)" },
 ];
-
-// schema for the preferences storage
-const PREFS_SCHEMA = {
-  BEHAVIOUR: {
-    ALLOW_DESKTOP_SWIPE: true,
-    ALLOW_PULL_TO_REFRESH_DESKTOP: false,
-  },
-  CUSTOMIZATION: {
-    //
-    UI_FONT: "var(--font-system)",
-  },
-} as const;
-
-export const PREFS: BuildPrefs<typeof PREFS_SCHEMA> = buildPrefs(
-  PREFS_SCHEMA,
-  STORAGE_KEYS.PREFERENCES,
-);

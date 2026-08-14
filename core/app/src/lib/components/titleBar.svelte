@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getCurrentWindow } from "@tauri-apps/api/window";
-  import { Minus, Diamond, X } from "lucide-svelte";
+  import { Minus, Diamond, X } from "@lucide/svelte";
   import LogoText from "$lib/assets/logoText.svelte";
   const appWindow = getCurrentWindow();
 
@@ -20,7 +20,7 @@
   >
     <LogoText />
     {#if !isRelease}
-      <span class="font-heading text-xs text-white opacity-100"
+      <span class="font-heading text-foreground text-xs opacity-100"
         >{isRelease ? appVersion : appVersion + "-" + typeOfRelease}</span
       >
     {/if}
@@ -30,35 +30,35 @@
 
   <div class="flex h-full items-center gap-0.5">
     <button
-      class="group hover:bg-text/10 active:bg-text/15 flex h-6 w-7 cursor-pointer items-center justify-center rounded-md bg-transparent text-inherit opacity-55 transition-colors duration-150 hover:opacity-90"
+      class="group hover:bg-foreground/10 active:bg-foreground/15 flex h-6 w-7 cursor-pointer items-center justify-center rounded-md bg-transparent text-inherit opacity-55 transition-colors duration-150 hover:opacity-90"
       onclick={() => appWindow.minimize()}
       aria-label="Minimize"
     >
       <Minus
         size={12}
-        strokeWidth={1.5}
+        strokeWidth={2}
         class="transition-transform duration-150 group-hover:scale-125"
       />
     </button>
     <button
-      class="group hover:bg-text/10 active:bg-text/15 flex h-6 w-7 cursor-pointer items-center justify-center rounded-md bg-transparent text-inherit opacity-55 transition-colors duration-150 hover:opacity-90"
+      class="group hover:bg-foreground/10 active:bg-foreground/15 flex h-6 w-7 cursor-pointer items-center justify-center rounded-md bg-transparent text-inherit opacity-55 transition-colors duration-150 hover:opacity-90"
       onclick={() => appWindow.toggleMaximize()}
       aria-label="Maximize"
     >
       <Diamond
         size={10}
-        strokeWidth={1.5}
+        strokeWidth={2}
         class="transition-transform duration-150 group-hover:scale-125"
       />
     </button>
     <button
-      class="group hover:bg-accent hover:text-bg flex h-6 w-7 cursor-pointer items-center justify-center rounded-md bg-transparent text-inherit opacity-55 transition-colors duration-150 hover:opacity-100"
+      class="group hover:bg-primary hover:text-background flex h-6 w-7 cursor-pointer items-center justify-center rounded-md bg-transparent text-inherit opacity-55 transition-colors duration-150 hover:opacity-100"
       onclick={() => appWindow.close()}
       aria-label="Close"
     >
       <X
-        size={12}
-        strokeWidth={1.5}
+        size={14}
+        strokeWidth={2}
         class="transition-transform duration-150 group-hover:scale-125"
       />
     </button>

@@ -11,3 +11,12 @@ export function screamingSnakeToCamelCase(text: string): string {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   return text.toLowerCase().replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase());
 }
+
+/**
+ * Type mirror of screamingSnakeToCamelCase
+ * "ALLOW_DESKTOP_SWIPE" to "allowDesktopSwipe" as a type
+ */
+export type CamelCase<Key extends string> =
+  Key extends `${infer Head}_${infer Tail}`
+    ? `${Lowercase<Head>}${Capitalize<CamelCase<Tail>>}`
+    : Lowercase<Key>;

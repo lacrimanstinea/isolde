@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import { createServer } from "node:net";
@@ -50,10 +50,19 @@ export function ensureAndroidInit() {
  * @param force Whether to force-generate the icons, even if they already exist
  */
 export function ensureIcons(type: IconType = "dev", force = false) {
-  if (!force && existsSync(ICONS_DIR)) return;
+  const iconTypeFile = join(ICONS_DIR, ".icontype"); // where to try and read icon from, if inexistent just refresh icons
+
+  const existingType = existsSync(iconTypeFile)
+    ? (readFileSync(iconTypeFile, "utf-8").trim() as IconType)
+    : null;
+
+  if (!force && existsSync(ICONS_DIR) && existingType === type) return;
+
   const script = ICON_SCRIPTS[type];
   console.log(`[setup] Generating icons (${type})...`);
   run("bun", ["run", "--filter", "@isolde/tauri", script]);
+
+  writeFileSync(iconTypeFile, type);
 }
 
 /**
@@ -123,7 +132,7 @@ export async function ensurePortFree(port: number, force: boolean) {
     console.error(
       `[setup] Port ${port} is already in use. Something else may be running, ` +
         `or a previous dev session didn't shut down cleanly. ` +
-        `Re-run with --force-port to kill whatever's using it.`,
+        `Re-run with --force to kill whatever process is using it.`,
     );
     process.exit(1);
   }

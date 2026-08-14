@@ -2,18 +2,31 @@
 
 import { run, ensureAndroidInit, ensureIcons } from "./utils";
 
-type Target = "desktop" | "android-aab" | "android-apk" | "all";
+type Target = "web" | "desktop" | "android" | "all";
+type AndroidArch = "aarch64" | "armv7" | "x86_64" | "i686" | "aab" | "apk";
 
 const target = Bun.argv[2] as Target | undefined;
+const subArg = Bun.argv[3] as AndroidArch | undefined;
 
-if (
-  !target ||
-  !["desktop", "android-aab", "android-apk", "all"].includes(target)
-) {
+const validTargets = ["web", "desktop", "android", "all"];
+const validAndroidArchs = ["aarch64", "armv7", "x86_64", "i686", "aab", "apk"];
+
+if (!target || !validTargets.includes(target)) {
   console.error(
-    "Usage: bun scripts/build.ts <desktop|android-aab|android-apk|all>",
+    "Usage: bun scripts/build.ts <web|desktop|android|all> [aarch64|armv7|x86_64|i686|aab|apk]",
   );
   process.exit(1);
+}
+
+if (target === "android" && subArg && !validAndroidArchs.includes(subArg)) {
+  console.error(
+    `Invalid Android target '${subArg}'. Valid choices: ${validAndroidArchs.join(", ")}`,
+  );
+  process.exit(1);
+}
+
+function buildWeb() {
+  run("bun", ["--filter", "@isolde/app", "build"]);
 }
 
 function buildDesktop() {
@@ -21,37 +34,43 @@ function buildDesktop() {
   run("bun", ["--filter", "@isolde/tauri", "tauri", "build"]);
 }
 
-function buildAndroidAab() {
+function buildAndroid(typeOrArch?: AndroidArch) {
   ensureIcons("release", true);
   ensureAndroidInit();
-  run("bun", ["--filter", "@isolde/tauri", "tauri", "android", "build"]);
-}
 
-function buildAndroidApk() {
-  ensureIcons("release", true);
-  ensureAndroidInit();
-  run("bun", [
+  if (typeOrArch === "aab") {
+    run("bun", ["--filter", "@isolde/tauri", "tauri", "android", "build"]);
+    return;
+  }
+
+  const args = [
     "--filter",
     "@isolde/tauri",
     "tauri",
     "android",
     "build",
     "--apk",
-  ]);
+  ];
+  if (typeOrArch && typeOrArch !== "apk") {
+    args.push("--target", typeOrArch);
+  }
+
+  run("bun", args);
 }
 
 switch (target) {
+  case "web":
+    buildWeb();
+    break;
   case "desktop":
     buildDesktop();
     break;
-  case "android-aab":
-    buildAndroidAab();
-    break;
-  case "android-apk":
-    buildAndroidApk();
+  case "android":
+    buildAndroid(subArg);
     break;
   case "all":
+    buildWeb();
     buildDesktop();
-    buildAndroidAab();
+    buildAndroid(); // universal .apk
     break;
 }

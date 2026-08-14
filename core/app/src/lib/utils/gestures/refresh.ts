@@ -1,6 +1,6 @@
 import { invalidateAll } from "$app/navigation";
 import { type GestureState } from "./types";
-import { REFRESH_THRESHOLD } from "$lib/utils/constants/gestures";
+import { REFRESH_THRESHOLD } from "@isolde/constants";
 
 /**
  * The lil refresh thingy when u scroll up,

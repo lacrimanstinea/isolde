@@ -7,15 +7,16 @@ import {
   killProcessOnPort,
 } from "./utils";
 
-type Target = "desktop" | "android" | "all";
+type Target = "web" | "desktop" | "android" | "all";
 
 const target = Bun.argv[2] as Target | undefined;
 const verbose = Bun.argv.includes("--verbose");
-const forcePort = Bun.argv.includes("--force-port");
+const forcePort = Bun.argv.includes("--force");
+const forceHost = Bun.argv.includes("--host");
 
-if (!target || !["desktop", "android", "all"].includes(target)) {
+if (!target || !["web", "desktop", "android", "all"].includes(target)) {
   console.error(
-    "Usage: bun scripts/dev.ts <desktop|android|all> [--verbose] [--force-port]",
+    "Usage: bun scripts/dev.ts <web|desktop|android|all> [--verbose] [--force] [--host]",
   );
   process.exit(1);
 }
@@ -28,10 +29,9 @@ if (target === "android" || target === "all") {
 }
 
 const v = verbose ? " -v" : "";
-const needsHost = target === "android" || target === "all";
 
 const webCommand = {
-  command: `bun run --filter @isolde/app dev${needsHost ? " --host" : ""}`,
+  command: `bun run --filter @isolde/app dev${forceHost ? " --host" : ""}`,
   name: "web",
   prefixColor: "cyan",
 };
@@ -49,15 +49,16 @@ const androidCommand = {
 };
 
 const commandSets: Record<Target, (typeof webCommand)[]> = {
+  web: [webCommand],
   desktop: [webCommand, desktopCommand],
   android: [webCommand, androidCommand],
   all: [webCommand, desktopCommand, androidCommand],
 };
 
 /**
- * Runs the dev server for the specified target (desktop, android, or all)
+ * Runs the dev server for the specified target (web, desktop, android, or all)
  *
- * @param target The target to run (desktop, android, or all)
+ * @param target The target to run (web, desktop, android, or all)
  */
 const { result, commands } = concurrently(commandSets[target], {
   killOthersOn: ["failure"],
