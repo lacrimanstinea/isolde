@@ -1,4 +1,4 @@
-import { NAVIGATION_ROUTES } from "$lib/utils/constants/routes";
+import { NAVIGATION_ROUTES } from "@isolde/constants";
 
 /**
  * Returns the index of the route that matches the given pathname

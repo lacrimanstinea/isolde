@@ -1,5 +1,5 @@
 import { platform as getTauriPlatform } from "@tauri-apps/plugin-os";
-import { STORAGE_KEYS } from "$lib/utils/constants/storage";
+import { STORAGE_KEYS } from "@isolde/constants";
 
 export type SupportedPlatform =
   "windows" | "macos" | "linux" | "android" | "ios" | "web";

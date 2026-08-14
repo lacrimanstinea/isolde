@@ -30,6 +30,7 @@
       "name": "@isolde/app",
       "version": "0.0.1",
       "dependencies": {
+        "@isolde/constants": "workspace:*",
         "@isolde/ui": "workspace:*",
         "@tauri-apps/api": "^2.11.1",
         "@tauri-apps/plugin-os": "^2.3.2",
@@ -58,6 +59,10 @@
       "devDependencies": {
         "@tauri-apps/cli": "^2",
       },
+    },
+    "shared/constants": {
+      "name": "@isolde/constants",
+      "version": "0.0.0",
     },
     "shared/ui": {
       "name": "@isolde/ui",
@@ -183,6 +188,8 @@
     "@humanwhocodes/retry": ["@humanwhocodes/retry@0.4.3", "", {}, "sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ=="],
 
     "@isolde/app": ["@isolde/app@workspace:core/app"],
+
+    "@isolde/constants": ["@isolde/constants@workspace:shared/constants"],
 
     "@isolde/tauri": ["@isolde/tauri@workspace:core/tauri"],
 

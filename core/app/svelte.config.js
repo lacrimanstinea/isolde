@@ -17,7 +17,10 @@ const config = {
       precompress: false,
       strict: true,
     }),
-    alias: { "@isolde/ui": path.resolve("../../shared/ui/src/lib") },
+    alias: {
+      "@isolde/ui": path.resolve("../../shared/ui/src/lib"),
+      "@isolde/constants": path.resolve("../../shared/constants/src"),
+    },
   },
 };
 

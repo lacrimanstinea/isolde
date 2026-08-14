@@ -15,7 +15,9 @@
       "@ui-lib": ["./shared/ui/src/lib"],
       "@ui-lib/*": ["./shared/ui/src/lib/*"],
       "@isolde/ui": ["./shared/ui/src/lib/index.ts"],
-      "@isolde/ui/*": ["./shared/ui/src/lib/*"]
+      "@isolde/ui/*": ["./shared/ui/src/lib/*"],
+      "@isolde/constants": ["./shared/constants/src/index.ts"],
+      "@isolde/constants/*": ["./shared/constants/src/*"]
     },
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -38,6 +40,8 @@
     "shared/ui/src/**/*.ts",
     "shared/ui/src/**/*.js",
     "shared/ui/src/**/*.svelte",
+    "shared/constants/src/**/*.ts",
+    "shared/constants/src/**/*.js",
     "core/app/.svelte-kit/ambient.d.ts",
     "core/app/.svelte-kit/types/**/$types.d.ts"
   ]
