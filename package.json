@@ -10,7 +10,8 @@
     "lint:fix": "eslint . --fix",
     "dev": "bun scripts/dev.ts",
     "build": "bun scripts/build.ts",
-    "ui:add": "cd shared/ui && bunx shadcn-svelte add"
+    "ui:add": "cd shared/ui && bunx shadcn-svelte add",
+    "tauri:cmd": "cd core/tauri && bunx tauri"
   },
   "lint-staged": {
     "*.{js,ts,svelte}": [
