@@ -8,24 +8,24 @@
     "jsx": "react-jsx",
     "allowJs": true,
     "types": ["bun"],
-
     "baseUrl": ".",
     "paths": {
       "$lib": ["./core/app/src/lib"],
-      "$lib/*": ["./core/app/src/lib/*"]
+      "$lib/*": ["./core/app/src/lib/*"],
+      "@ui-lib": ["./shared/ui/src/lib"],
+      "@ui-lib/*": ["./shared/ui/src/lib/*"],
+      "@isolde/ui": ["./shared/ui/src/lib/index.ts"],
+      "@isolde/ui/*": ["./shared/ui/src/lib/*"]
     },
-
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
-
     "strict": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false
@@ -35,8 +35,10 @@
     "core/app/src/**/*.ts",
     "core/app/src/**/*.js",
     "core/app/src/**/*.svelte",
+    "shared/ui/src/**/*.ts",
+    "shared/ui/src/**/*.js",
+    "shared/ui/src/**/*.svelte",
     "core/app/.svelte-kit/ambient.d.ts",
-    "core/app/.svelte-kit/types/**/$types.d.ts",
-    "shared/ui/src/utils.ts"
+    "core/app/.svelte-kit/types/**/$types.d.ts"
   ]
 }
