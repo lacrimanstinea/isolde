@@ -1,6 +1,6 @@
 # isolde
 
-A unified media app for movies, TV shows, anime, manga, comics, and books, bring your own sources, connect trackers, organize your library, and keep everything together in one place.
+A unified media app for movies, TV shows, anime, manga, comics, and books, bring your own sources, connect trackers, organize your library, and keep everything together in one place (or well, that's the idea at least)
 
 [![CI](https://github.com/lacrimanstinea/isolde/actions/workflows/build.yml/badge.svg)](https://github.com/lacrimanstinea/isolde/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/lacrimanstinea/isolde?style=flat-square)](https://github.com/lacrimanstinea/isolde/releases)
@@ -15,7 +15,7 @@ A unified media app for movies, TV shows, anime, manga, comics, and books, bring
   - [Prerequisites](#prerequisites)
   - [Quick start (development)](#quick-start-development)
 - [Project structure](#project-structure)
-- [Configuration](#configuration)
+- [Build Configuration](#build-configuration)
 - [Contributing](#contributing)
 
 ## What is isolde?
@@ -60,15 +60,15 @@ This repository mixes frontend, mobile, and backend/native components:
    - bun install
      the default port is 5173, don't really change it because it's how half the app works i think idk
 2. desktop (tauri)
-   - bun dev:tauri:desktop
+   - bun dev desktop
 3. android (tauri)
    - cd core/tauri
    - bunx tauri android init
    - cd ../../
-   - bun dev:tauri:android
+   - bun dev android
      (icon generation runs automatically on first launch if it's missing)
 4. all (what i do cuz im lazy)
-   - bun dev:all
+   - bun dev all
      (this spins up web, android and desktop stuff, same auto setup as above)
 
 to be honest i don't have an ios or macos device to test so i'm just hoping all of this works out of the box but i don't officially provide support since i literally can't test it nor do i care too much tbh
@@ -77,11 +77,14 @@ to be honest i don't have an ios or macos device to test so i'm just hoping all 
 
 - core/app, svelte frontend
 - core/tauri, tauri for desktop and mobile
-- scripts, dev and build orchestration scripts (bun-based)
+- /scripts, dev and build scripts (bun-based)
+- shared/ui, shared ui components
+- shared/utils, shared utility functions
+- shared/constants, shared constants
 
-## Configuration
+## Build Configuration
 
-handled by the github actions im too lazy to go into it, just read the code
+handled by the github actions im too lazy to go into it, just read the workflows, it's pretty straightforward
 
 ## Contributing
 
