@@ -213,13 +213,18 @@ jobs:
 
       - name: Save iOS artifacts
         run: |
+          mkdir -p release
           VERSION="${{ needs.prepare.outputs.version }}"
           PROD="${{ needs.prepare.outputs.product-name }}"
           PREFIX="${PROD// / }"
-          ipa=$(find artifacts/ios -type f -name "*.ipa" -print -quit 2>/dev/null || true)
-          [ -n "$ipa" ] && cp "$ipa" "release/${PREFIX}-ios_${VERSION}.ipa"
-          app=$(find artifacts/ios -type f -name "*.app" -print -quit 2>/dev/null || true)
-          [ -n "$app" ] && cp "$app" "release/${PREFIX}-ios_${VERSION}.app"
+          ipa=$(find artifacts -type f -name "*.ipa" -print -quit 2>/dev/null || true)
+          if [ -n "$ipa" ]; then
+            cp "$ipa" "release/${PREFIX}-ios_${VERSION}.ipa"
+          fi
+          app=$(find artifacts -type d -name "*.app" -print -quit 2>/dev/null || true)
+          if [ -n "$app" ]; then
+            cp -R "$app" "release/${PREFIX}-ios_${VERSION}.app"
+          fi
 
       - name: Save Desktop artifacts
         run: |
