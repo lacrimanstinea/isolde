@@ -143,6 +143,7 @@ jobs:
       version: ${{ needs.prepare.outputs.version }}
       app-identifier: ${{ needs.prepare.outputs.app-identifier }}
       product-name: ${{ needs.prepare.outputs.product-name }}
+    secrets: inherit
 
   build-android:
     needs: prepare
@@ -182,15 +183,9 @@ jobs:
           path: artifacts
           merge-multiple: false
 
-      - name: Save desktop artifacts
-        run: |
-          mkdir -p release
-          find artifacts/macos-universal -type f \( -name "*.dmg" -o -name "*.app.tar.gz" \) -exec cp {} release/ \; 2>/dev/null || true
-          find artifacts/linux -type f \( -name "*.deb" -o -name "*.AppImage" -o -name "*.rpm" \) -exec cp {} release/ \; 2>/dev/null || true
-          find artifacts/windows -type f \( -name "*.msi" -o -name "*.exe" \) -exec cp {} release/ \; 2>/dev/null || true
-
       - name: Save Android per-arch APKs and rename to common naming conventions
         run: |
+          mkdir -p release
           VERSION="${{ needs.prepare.outputs.version }}"
           PROD="${{ needs.prepare.outputs.product-name }}"
           PREFIX="${PROD// / }"
@@ -200,18 +195,11 @@ jobs:
             if [ -z "$apk" ]; then
               apk=$(find "artifacts/android-${arch}" -type f -name "*.apk" -print -quit 2>/dev/null || true)
             fi
-
             if [ -n "$apk" ]; then
               dest_arch="$arch"
-              if [ "$arch" = "aarch64" ]; then
-                dest_arch="arm64-v8a"
-              elif [ "$arch" = "armv7" ]; then
-                dest_arch="armeabi-v7a"
-              elif [ "$arch" = "x86_64" ]; then
-                dest_arch="x86_64"
-              elif [ "$arch" = "i686" ]; then
-                dest_arch="x86"
-              fi
+              [ "$arch" = "aarch64" ] && dest_arch="arm64-v8a"
+              [ "$arch" = "armv7" ] && dest_arch="armeabi-v7a"
+              [ "$arch" = "i686" ] && dest_arch="x86"
               cp "$apk" "release/${PREFIX}-android-${dest_arch}_${VERSION}.apk"
             fi
           done
@@ -221,34 +209,23 @@ jobs:
           VERSION="${{ needs.prepare.outputs.version }}"
           PROD="${{ needs.prepare.outputs.product-name }}"
           PREFIX="${PROD// / }"
-
           apk=$(find artifacts/android-universal -type f -name "*.apk" -print -quit 2>/dev/null || true)
-          if [ -n "$apk" ]; then
-            cp "$apk" "release/${PREFIX}-android-universal_${VERSION}.apk"
-          fi
+          [ -n "$apk" ] && cp "$apk" "release/${PREFIX}-android-universal_${VERSION}.apk"
 
       - name: Save iOS artifacts
         run: |
           VERSION="${{ needs.prepare.outputs.version }}"
           PROD="${{ needs.prepare.outputs.product-name }}"
           PREFIX="${PROD// / }"
-
           ipa=$(find artifacts/ios -type f -name "*.ipa" -print -quit 2>/dev/null || true)
-          if [ -n "$ipa" ]; then
-            cp "$ipa" "release/${PREFIX}-ios_${VERSION}.ipa"
-          fi
-
+          [ -n "$ipa" ] && cp "$ipa" "release/${PREFIX}-ios_${VERSION}.ipa"
           app=$(find artifacts/ios -type f -name "*.app" -print -quit 2>/dev/null || true)
-          if [ -n "$app" ]; then
-            cp "$app" "release/${PREFIX}-ios_${VERSION}.app"
-          fi
+          [ -n "$app" ] && cp "$app" "release/${PREFIX}-ios_${VERSION}.app"
 
       - name: Set up Android build-tools
         uses: android-actions/setup-android@v3
-
       - name: Install Android build-tools
         run: sdkmanager "build-tools;34.0.0"
-
       - name: Verify all APKs are release-signed
         run: |
           APKSIGNER="$ANDROID_HOME/build-tools/34.0.0/apksigner"
@@ -258,25 +235,10 @@ jobs:
             "$APKSIGNER" verify --print-certs "$apk"
           done
 
-      - name: Determine Tag and Release Name
-        id: release-meta
-        run: |
-          VERSION="${{ needs.prepare.outputs.version }}"
-          IS_RELEASE="${{ needs.prepare.outputs.is-release }}"
-          TYPE_OF_RELEASE="${{ needs.prepare.outputs.type-of-release }}"
-
-          if [ "$IS_RELEASE" == "true" ]; then
-            echo "tag-name=v${VERSION}" >> $GITHUB_OUTPUT
-            echo "release-name=isolde ${VERSION}" >> $GITHUB_OUTPUT
-          else
-            echo "tag-name=v${VERSION}-${TYPE_OF_RELEASE}" >> $GITHUB_OUTPUT
-            echo "release-name=isolde ${VERSION}-${TYPE_OF_RELEASE}" >> $GITHUB_OUTPUT
-          fi
-
       - uses: softprops/action-gh-release@v2
         with:
-          name: ${{ steps.release-meta.outputs.release-name }}
-          tag_name: ${{ steps.release-meta.outputs.tag-name }}
+          name: isolde ${{ needs.prepare.outputs.version }}${{ needs.prepare.outputs.is-release != 'true' && format('-{0}', needs.prepare.outputs.type-of-release) || '' }}
+          tag_name: ${{ needs.prepare.outputs.tag-name }}
           draft: true
           prerelease: ${{ needs.prepare.outputs.is-release != 'true' }}
           make_latest: ${{ needs.prepare.outputs.is-release == 'true' }}
@@ -286,6 +248,26 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish release
-        run: gh release edit "${{ steps.release-meta.outputs.tag-name }}" --draft=false
+        run: gh release edit "${{ needs.prepare.outputs.tag-name }}" --draft=false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Mirror desktop assets to rolling channel release (for auto-update)
+        if: needs.prepare.outputs.is-release != 'true'
+        run: |
+          CHANNEL="${{ needs.prepare.outputs.type-of-release }}"
+          mkdir -p desktop-assets
+          gh release download "${{ needs.prepare.outputs.tag-name }}" --dir desktop-assets \
+            --pattern "*.dmg" --pattern "*.app.tar.gz" --pattern "*.deb" \
+            --pattern "*.AppImage" --pattern "*.rpm" --pattern "*.msi" \
+            --pattern "*.exe" --pattern "*.sig" --pattern "latest.json"
+
+          gh release view "$CHANNEL" >/dev/null 2>&1 || \
+          gh release create "$CHANNEL" \
+            --title "isolde ($CHANNEL channel)" \
+            --notes "Rolling release providing the latest $CHANNEL auto-update manifest. Not for direct download." \
+            --prerelease
+
+          gh release upload "$CHANNEL" desktop-assets/* --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

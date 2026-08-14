@@ -18,40 +18,34 @@ on:
       product-name:
         type: string
         required: true
+    secrets:
+      TAURI_SIGNING_PRIVATE_KEY:
+        required: true
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD:
+        required: true
 
 jobs:
   build:
     name: ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix:
         include:
           - platform: macos
             os: macos-latest
-            artifact-name: macos-universal
             targets: aarch64-apple-darwin, x86_64-apple-darwin
-            build-cmd: bun --filter @isolde/tauri tauri build --target universal-apple-darwin
-            artifact-path: |
-              core/tauri/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
-              core/tauri/src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
+            args: --target universal-apple-darwin
           - platform: linux
             os: ubuntu-latest
-            artifact-name: linux
             targets: ""
-            build-cmd: bun --filter @isolde/tauri tauri build
-            artifact-path: |
-              core/tauri/src-tauri/target/release/bundle/deb/*.deb
-              core/tauri/src-tauri/target/release/bundle/appimage/*.AppImage
-              core/tauri/src-tauri/target/release/bundle/rpm/*.rpm
+            args: ""
           - platform: windows
             os: windows-latest
-            artifact-name: windows
             targets: ""
-            build-cmd: bun --filter @isolde/tauri tauri build
-            artifact-path: |
-              core/tauri/src-tauri/target/release/bundle/msi/*.msi
-              core/tauri/src-tauri/target/release/bundle/nsis/*.exe
+            args: ""
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -69,11 +63,14 @@ jobs:
         with:
           key: ${{ matrix.platform }}
       - run: bun install
-      - name: Update app identifier and name
+
+      - name: Update app identifier, name, version, updater endpoint
         shell: python
         env:
           APP_IDENTIFIER: ${{ inputs.app-identifier }}
           PRODUCT_NAME: ${{ inputs.product-name }}
+          VERSION: ${{ inputs.version }}
+          TYPE_OF_RELEASE: ${{ inputs.type-of-release }}
         run: |
           import os, json, pathlib
 
@@ -82,13 +79,18 @@ jobs:
 
           data["identifier"] = os.environ["APP_IDENTIFIER"]
           data["productName"] = os.environ["PRODUCT_NAME"]
+          data["version"] = os.environ["VERSION"]
+
+          type_of_release = os.environ["TYPE_OF_RELEASE"]
+          if type_of_release == "stable":
+              endpoint = "https://github.com/lacrimanstinea/isolde/releases/latest/download/latest.json"
+          else:
+              endpoint = f"https://github.com/lacrimanstinea/isolde/releases/download/{type_of_release}/latest.json"
+
+          data["plugins"]["updater"]["endpoints"] = [endpoint]
 
           config_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
-      - name: Set app version
-        shell: bash
-        run: |
-          jq --arg v "${{ inputs.version }}" '.version = $v' core/tauri/src-tauri/tauri.conf.json > /tmp/tauri.conf.json.tmp
-          mv /tmp/tauri.conf.json.tmp core/tauri/src-tauri/tauri.conf.json
+
       - name: Regenerate Icons
         shell: bash
         run: |
@@ -107,12 +109,12 @@ jobs:
             echo "::warning::Icon target 'icon:$ICON_TYPE' failed or does not exist. Falling back to icon:preview."
             bun --filter @isolde/tauri icon:preview
           fi
+
       - name: Create env file for app version and release state
         shell: python
         env:
           VITE_APP_VERSION: ${{ inputs.version }}
           VITE_IS_RELEASE: ${{ inputs.is-release }}
-          VITE_TYPE_OF_RELEASE: "${{ inputs.type-of-release }}"
         run: |
           import os, pathlib
 
@@ -121,12 +123,34 @@ jobs:
 
           content = f"VITE_APP_VERSION={os.environ['VITE_APP_VERSION']}\nVITE_IS_RELEASE={os.environ['VITE_IS_RELEASE']}\n"
           env_path.write_text(content, encoding="utf-8")
-      - name: Build Application
+
+      - name: Compute tag and release name
+        id: release-meta
+        shell: bash
+        run: |
+          VERSION="${{ inputs.version }}"
+          IS_RELEASE="${{ inputs.is-release }}"
+          TYPE_OF_RELEASE="${{ inputs.type-of-release }}"
+
+          if [ "$IS_RELEASE" == "true" ]; then
+            echo "tag-name=v${VERSION}" >> $GITHUB_OUTPUT
+            echo "release-name=isolde ${VERSION}" >> $GITHUB_OUTPUT
+          else
+            echo "tag-name=v${VERSION}-${TYPE_OF_RELEASE}" >> $GITHUB_OUTPUT
+            echo "release-name=isolde ${VERSION}-${TYPE_OF_RELEASE}" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: tauri-apps/tauri-action@v0
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           VITE_APP_VERSION: ${{ inputs.version }}
           VITE_IS_RELEASE: ${{ inputs.is-release }}
-        run: ${{ matrix.build-cmd }}
-      - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact-name }}
-          path: ${{ matrix.artifact-path }}
+          projectPath: core/tauri
+          tagName: ${{ steps.release-meta.outputs.tag-name }}
+          releaseName: ${{ steps.release-meta.outputs.release-name }}
+          releaseDraft: true
+          prerelease: ${{ inputs.is-release != true }}
+          args: ${{ matrix.args }}
