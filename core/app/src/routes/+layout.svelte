@@ -4,10 +4,11 @@
   import TitleBar from "$lib/components/titleBar.svelte";
   import { platform, initPlatform } from "$lib/stores/platform";
   import { initFont } from "$lib/stores/font";
-  import { Button } from "@isolde/ui/components/ui/button/index";
+  import { initTheme } from "$lib/stores/theme";
 
   onMount(() => {
     initPlatform();
+    initTheme();
     initFont();
   });
 
@@ -27,10 +28,6 @@
         `
       : ""}
   >
-    <div class="flex flex-wrap items-center gap-2 md:flex-row">
-      <Button variant="outline">Button</Button>
-      <Button variant="outline" size="icon" aria-label="Submit">X</Button>
-    </div>
     {@render children()}
   </main>
 </div>
