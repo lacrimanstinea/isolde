@@ -14,12 +14,13 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - name: Delete branch
         run: |
+          list_of_branches=("main" "master" "dev" "preview")
           branch_name="${{ github.event.pull_request.head.ref }}"
-          if [ "$branch_name" != "main" ] && [ "$branch_name" != "master" ]; then
+          if [[ ! " ${list_of_branches[@]} " =~ " ${branch_name} " ]]; then
             echo "Deleting branch ${branch_name}"
             git push origin --delete "$branch_name" || echo "Branch already deleted, skipping."
           else
-            echo "Skipping deletion of main or master branch"
+            echo "Skipping deletion of $branch_name branch"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
