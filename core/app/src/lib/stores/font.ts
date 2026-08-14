@@ -1,17 +1,18 @@
 import { writable } from "svelte/store";
-import { PREFS } from "$lib/utils/constants/preferences";
+import { PREFS } from "../../../../../shared/constants/src/constants/preferences";
+import { setStorageItem, getStorageItem } from "$lib/utils/stores/helper";
 
 const STORAGE_KEY = PREFS.CUSTOMIZATION.UI_FONT.STORAGE_KEY;
-const DEFAULT_CUSTOM = PREFS.CUSTOMIZATION.UI_FONT.DEFAULT_VALUE;
+const DEFAULT_FONT = PREFS.CUSTOMIZATION.UI_FONT.DEFAULT_VALUE;
 
-export const fontCustom = writable<string>(DEFAULT_CUSTOM);
+export const font = writable<string>(DEFAULT_FONT);
 
 /**
  * Sets the custom font to the given value
  */
 export function setFont(value: string) {
-  fontCustom.set(value);
-  localStorage.setItem(STORAGE_KEY, value);
+  font.set(value);
+  setStorageItem(STORAGE_KEY, value);
   applyFont(value);
 }
 
@@ -19,23 +20,24 @@ export function setFont(value: string) {
  * Initializes the font store, loading the custom font from local storage
  */
 export function initFont() {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  const font = stored ?? DEFAULT_CUSTOM;
-  if (!stored) return setFont(font);
-  // if first time just set to default
-  applyFont(font);
+  const stored = getStorageItem(STORAGE_KEY, DEFAULT_FONT) as string;
+  font.set(stored);
+  applyFont(stored);
 }
 
 /**
  * Resets the custom font to the default value
  */
 export function resetFont() {
-  setFont(DEFAULT_CUSTOM);
+  setFont(DEFAULT_FONT);
 }
 
 /**
  * Applies the given font value
  */
 function applyFont(value: string) {
-  document.documentElement.style.setProperty("--font-custom", value);
+  document.documentElement.style.setProperty(
+    "--font-custom",
+    `var(--font-${value})`,
+  );
 }

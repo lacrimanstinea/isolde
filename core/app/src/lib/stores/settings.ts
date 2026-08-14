@@ -1,29 +1,24 @@
 import { writable } from "svelte/store";
-import { PREFS } from "../utils/constants/preferences";
+import { PREFS } from "@isolde/constants";
+import { getStorageItem, setStorageItem } from "$lib/utils/stores/helper";
 
-function createBoolKey(key: string, defaultValue: boolean) {
-  const stored =
-    typeof localStorage !== "undefined" ? localStorage.getItem(key) : null;
-
-  const initial = stored === null ? defaultValue : stored === "true";
-
-  const store = writable<boolean>(initial);
+function createKey(key: string, defaultValue: boolean) {
+  const stored = getStorageItem(key, defaultValue);
+  const store = writable<boolean>(stored);
 
   store.subscribe((value) => {
-    if (typeof localStorage !== "undefined") {
-      localStorage.setItem(key, String(value));
-    }
+    setStorageItem(key, value);
   });
 
   return store;
 }
 
 // i'll move this later into a different system to connect local prefs file and this, but for now it's fine
-export const allowDesktopSwipe = createBoolKey(
+export const allowDesktopSwipe = createKey(
   PREFS.BEHAVIOUR.ALLOW_DESKTOP_SWIPE.STORAGE_KEY,
   PREFS.BEHAVIOUR.ALLOW_DESKTOP_SWIPE.DEFAULT_VALUE,
 );
-export const allowPullToRefreshDesktop = createBoolKey(
+export const allowPullToRefreshDesktop = createKey(
   PREFS.BEHAVIOUR.ALLOW_PULL_TO_REFRESH_DESKTOP.STORAGE_KEY,
   PREFS.BEHAVIOUR.ALLOW_PULL_TO_REFRESH_DESKTOP.DEFAULT_VALUE,
 );
