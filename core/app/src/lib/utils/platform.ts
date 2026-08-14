@@ -11,7 +11,6 @@ export type SupportedPlatform =
  * @property {boolean} isMobile - Whether the platform is a mobile environment
  * @property {boolean} isTauri - Whether the platform is a Tauri environment (use this to determine if you're on the web or tauri)
  */
-
 export interface PlatformInfo {
   os: SupportedPlatform;
   isDesktop: boolean;
