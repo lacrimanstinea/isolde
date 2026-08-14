@@ -137,6 +137,8 @@ jobs:
   build-desktop:
     needs: prepare
     uses: ./.github/workflows/build-desktop.yml
+    permissions:
+      contents: write
     with:
       is-release: ${{ needs.prepare.outputs.is-release == 'true' }}
       type-of-release: ${{ needs.prepare.outputs.type-of-release }}
