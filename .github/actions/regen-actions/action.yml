@@ -1,0 +1,25 @@
+name: Regenerate Icons
+description: Regenerates app icons based on release channel
+inputs:
+  type-of-release:
+    required: true
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        cd core/tauri/src-tauri
+        INPUT_TYPE="${{ inputs.type-of-release }}"
+        ICON_TYPE="$INPUT_TYPE"
+
+        if [ "$INPUT_TYPE" = "stable" ]; then
+          ICON_TYPE="release"
+        elif [ -z "$ICON_TYPE" ]; then
+          ICON_TYPE="preview"
+        fi
+
+        echo "Attempting to generate icons for type: $ICON_TYPE"
+        if ! bun --filter @isolde/tauri icon:$ICON_TYPE; then
+          echo "::warning::Icon target 'icon:$ICON_TYPE' failed or does not exist. Falling back to icon:preview."
+          bun --filter @isolde/tauri icon:preview
+        fi
