@@ -35,25 +35,15 @@ jobs:
         with:
           key: ios
       - run: bun install
-      - name: Update app identifier and name
-        shell: python
-        env:
-          APP_IDENTIFIER: ${{ inputs.app-identifier }}
-          PRODUCT_NAME: ${{ inputs.product-name }}
-        run: |
-          import os, json, pathlib
 
-          config_path = pathlib.Path("core/tauri/src-tauri/tauri.conf.json")
-          data = json.loads(config_path.read_text(encoding="utf-8"))
+      - name: Patch tauri.conf.json
+        uses: ./.github/actions/patch-tauri-config
+        with:
+          app-identifier: ${{ inputs.app-identifier }}
+          product-name: ${{ inputs.product-name }}
+          version: ${{ inputs.version }}
+          type-of-release: ${{ inputs.type-of-release }}
 
-          data["identifier"] = os.environ["APP_IDENTIFIER"]
-          data["productName"] = os.environ["PRODUCT_NAME"]
-
-          config_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
-      - name: Set app version
-        run: |
-          jq --arg v "${{ inputs.version }}" '.version = $v' core/tauri/src-tauri/tauri.conf.json > /tmp/tauri.conf.json.tmp
-          mv /tmp/tauri.conf.json.tmp core/tauri/src-tauri/tauri.conf.json
       - name: Initialize iOS Project
         shell: bash
         run: |
@@ -61,22 +51,10 @@ jobs:
           rm -rf gen/apple
           bun run tauri ios init
       - name: Regenerate Icons
-        run: |
-          cd core/tauri/src-tauri
-          INPUT_TYPE="${{ inputs.type-of-release }}"
-          ICON_TYPE="$INPUT_TYPE"
+        uses: ./.github/actions/regen-icons
+        with:
+          type-of-release: ${{ inputs.type-of-release }}
 
-          if [ "$INPUT_TYPE" = "stable" ]; then
-            ICON_TYPE="release"
-          elif [ -z "$ICON_TYPE" ]; then
-            ICON_TYPE="preview"
-          fi
-
-          echo "Attempting to generate icons for type: $ICON_TYPE"
-          if ! bun --filter @isolde/tauri icon:$ICON_TYPE; then
-            echo "::warning::Icon target 'icon:$ICON_TYPE' failed or does not exist. Falling back to icon:preview."
-            bun --filter @isolde/tauri icon:preview
-          fi
       - name: Build iOS App
         env:
           VITE_APP_VERSION: ${{ inputs.version }}
