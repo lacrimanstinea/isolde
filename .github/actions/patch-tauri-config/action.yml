@@ -1,0 +1,50 @@
+name: Patch Tauri Config
+description: Updates identifier, product name, version, and (optionally) the updater endpoint in tauri.conf.json
+inputs:
+  app-identifier:
+    required: true
+  product-name:
+    required: true
+  version:
+    required: true
+  type-of-release:
+    required: true
+  set-updater-endpoint:
+    required: false
+    default: "false"
+runs:
+  using: composite
+  steps:
+    - shell: python
+      env:
+        APP_IDENTIFIER: ${{ inputs.app-identifier }}
+        PRODUCT_NAME: ${{ inputs.product-name }}
+        VERSION: ${{ inputs.version }}
+        TYPE_OF_RELEASE: ${{ inputs.type-of-release }}
+        SET_UPDATER_ENDPOINT: ${{ inputs.set-updater-endpoint }}
+      run: |
+        import os, json, pathlib
+
+        config_path = pathlib.Path("core/tauri/src-tauri/tauri.conf.json")
+        data = json.loads(config_path.read_text(encoding="utf-8"))
+
+        data["identifier"] = os.environ["APP_IDENTIFIER"]
+        data["productName"] = os.environ["PRODUCT_NAME"]
+        data["version"] = os.environ["VERSION"]
+
+        if os.environ["SET_UPDATER_ENDPOINT"] == "true":
+            type_of_release = os.environ["TYPE_OF_RELEASE"]
+            if type_of_release == "stable":
+                endpoint = "https://github.com/lacrimanstinea/isolde/releases/latest/download/latest.json"
+            else:
+                endpoint = f"https://github.com/lacrimanstinea/isolde/releases/download/{type_of_release}/latest.json"
+
+            # ensure the nested dictionaries exist to prevent errors
+            if "plugins" not in data:
+                data["plugins"] = {}
+            if "updater" not in data["plugins"]:
+                data["plugins"]["updater"] = {}
+
+            data["plugins"]["updater"]["endpoints"] = [endpoint]
+
+        config_path.write_text(json.dumps(data, indent=2), encoding="utf-8")

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { ColorPicker } from "@isolde/ui/components/custom/colorPicker";
   import { themeStore, updateThemeOption, setTheme } from "$lib/stores/theme";
+  import UpdateCheck from "$lib/components/updateCheck.svelte";
 </script>
 
 <div class="bg-elevation-1 w-full">
@@ -8,6 +9,7 @@
   <div class="bg-elevation-2 w-full">
     <h1>elevation 2</h1>
     <div class="bg-elevation-3 w-full">
+      <UpdateCheck />
       <h1>elevation 3</h1>
       <div class="bg-elevation-4 w-full">
         <h1>elevation 4</h1>

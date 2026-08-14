@@ -72,40 +72,25 @@ jobs:
         with:
           key: "android-${{ matrix.name }}"
       - run: bun install
-      - name: Update app identifier and name
-        shell: bash
-        run: |
-          IDENTIFIER="${{ inputs.app-identifier }}"
-          PROD_NAME="${{ inputs.product-name }}"
 
-          sed -i "s/\"identifier\": \"com.lacrimanstinea.isolde.development\"/\"identifier\": \"$IDENTIFIER\"/g" core/tauri/src-tauri/tauri.conf.json
-          sed -i "s/\"productName\": \"isoldeD\"/\"productName\": \"$PROD_NAME\"/g" core/tauri/src-tauri/tauri.conf.json
-      - name: Set app version
-        run: |
-          jq --arg v "${{ inputs.version }}" '.version = $v' core/tauri/src-tauri/tauri.conf.json > /tmp/tauri.conf.json.tmp
-          mv /tmp/tauri.conf.json.tmp core/tauri/src-tauri/tauri.conf.json
+      - name: Patch tauri.conf.json
+        uses: ./.github/actions/patch-tauri-config
+        with:
+          app-identifier: ${{ inputs.app-identifier }}
+          product-name: ${{ inputs.product-name }}
+          version: ${{ inputs.version }}
+          type-of-release: ${{ inputs.type-of-release }}
+
       - name: Initialize Android Project
         run: |
           cd core/tauri/src-tauri
           rm -rf gen/android
           bun run tauri android init
       - name: Regenerate Icons
-        run: |
-          cd core/tauri/src-tauri
-          INPUT_TYPE="${{ inputs.type-of-release }}"
-          ICON_TYPE="$INPUT_TYPE"
+        uses: ./.github/actions/regen-icons
+        with:
+          type-of-release: ${{ inputs.type-of-release }}
 
-          if [ "$INPUT_TYPE" = "stable" ]; then
-            ICON_TYPE="release"
-          elif [ -z "$ICON_TYPE" ]; then
-            ICON_TYPE="preview"
-          fi
-
-          echo "Attempting to generate icons for type: $ICON_TYPE"
-          if ! bun --filter @isolde/tauri icon:$ICON_TYPE; then
-            echo "::warning::Icon target 'icon:$ICON_TYPE' failed or does not exist. Falling back to icon:preview."
-            bun --filter @isolde/tauri icon:preview
-          fi
       - name: Create keystore for signing
         run: |
           mkdir -p core/tauri/src-tauri/gen/android
