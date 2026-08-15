@@ -1,0 +1,74 @@
+name: Generate latest.json
+description: Builds a Tauri updater manifest
+inputs:
+  version:
+    required: true
+  tag-name:
+    required: true
+  type-of-release:
+    required: true
+outputs:
+  path:
+    description: Path to the generated latest.json
+    value: ${{ steps.gen.outputs.path }}
+runs:
+  using: composite
+  steps:
+    - id: gen
+      shell: python
+      env:
+        VERSION: ${{ inputs.version }}
+        TAG_NAME: ${{ inputs.tag-name }}
+        TYPE_OF_RELEASE: ${{ inputs.type-of-release }}
+        REPO: ${{ github.repository }}
+      run: |
+        import os, glob, json, datetime, pathlib
+        version = os.environ["VERSION"]
+        tag_name = os.environ["TAG_NAME"]
+        type_of_release = os.environ["TYPE_OF_RELEASE"]
+        repo = os.environ["REPO"]
+
+        if type_of_release == "stable":
+            base_url = f"https://github.com/{repo}/releases/latest/download"
+        else:
+            base_url = f"https://github.com/{repo}/releases/download/{tag_name}"
+
+        platforms = {}
+        def add(key, sig_path, asset_name):
+            signature = pathlib.Path(sig_path).read_text().strip()
+            platforms[key] = {
+                "signature": signature,
+                "url": f"{base_url}/{asset_name}",
+            }
+        for sig_path in sorted(glob.glob("release/*.sig")):
+            asset_path = sig_path[:-4]  # strip trailing ".sig"
+            asset_name = os.path.basename(asset_path)
+            lower = asset_name.lower()
+            if lower.endswith(".msi"):
+                add("windows-x86_64", sig_path, asset_name)
+                add("windows-x86_64-msi", sig_path, asset_name)
+            elif lower.endswith(".exe"):
+                add("windows-x86_64-nsis", sig_path, asset_name)
+            elif lower.endswith(".appimage"):
+                add("linux-x86_64", sig_path, asset_name)
+                add("linux-x86_64-appimage", sig_path, asset_name)
+            elif lower.endswith(".deb"):
+                add("linux-x86_64-deb", sig_path, asset_name)
+            elif lower.endswith(".rpm"):
+                add("linux-x86_64-rpm", sig_path, asset_name)
+            elif lower.endswith(".app.tar.gz"):
+                for key in ("darwin-aarch64", "darwin-x86_64", "darwin-aarch64-app", "darwin-x86_64-app"):
+                    add(key, sig_path, asset_name)
+            else:
+                print(f"::warning::Unrecognized signature file, skipping: {asset_name}")
+        if not platforms:
+            raise SystemExit("No .sig files found in release/ — nothing to build latest.json from")
+        manifest = {
+            "version": version,
+            "notes": "",
+            "pub_date": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z"),
+            "platforms": platforms,
+        }
+        pathlib.Path("latest.json").write_text(json.dumps(manifest, indent=2))
+        print(json.dumps(manifest, indent=2))
+        print("path=latest.json", file=open(os.environ["GITHUB_OUTPUT"], "a"))

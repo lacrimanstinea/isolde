@@ -230,17 +230,15 @@ jobs:
         run: |
           find artifacts -type f \( -name "*.dmg" -o -name "*.app.tar.gz" -o -name "*.deb" -o -name "*.AppImage" -o -name "*.rpm" -o -name "*.msi" -o -name "*.exe" -o -name "*.sig" \) -exec cp {} release/ \;
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install tauri-latest-json
-        run: cargo install tauri-latest-json
-
       - name: Generate latest.json
-        run: |
-          BASE_URL="https://github.com/${{ github.repository }}/releases/download/${{ needs.prepare.outputs.tag-name }}"
-          tauri-latest-json ./release "$BASE_URL"
-          cp latest.json release/
+        uses: ./.github/actions/generate-latest-json
+        with:
+          version: ${{ needs.prepare.outputs.version }}
+          tag-name: ${{ needs.prepare.outputs.tag-name }}
+          type-of-release: ${{ needs.prepare.outputs.type-of-release }}
+
+      - name: Remove .sig files from release assets
+        run: rm -f release/*.sig
 
       - name: Set up Android build-tools
         uses: android-actions/setup-android@v3
@@ -285,6 +283,6 @@ jobs:
             --notes "Rolling channel holding the latest $CHANNEL auto-update manifest." \
             --prerelease
 
-          gh release upload "$CHANNEL" release/latest.json --clobber
+          gh release upload "$CHANNEL" latest.json --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
