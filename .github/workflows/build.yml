@@ -230,6 +230,21 @@ jobs:
         run: |
           find artifacts -type f \( -name "*.dmg" -o -name "*.app.tar.gz" -o -name "*.deb" -o -name "*.AppImage" -o -name "*.rpm" -o -name "*.msi" -o -name "*.exe" -o -name "*.sig" \) -exec cp {} release/ \;
 
+      - name: Rename macOS updater bundle to include version
+        run: |
+          VERSION="${{ needs.prepare.outputs.version }}"
+          PROD="${{ needs.prepare.outputs.product-name }}"
+
+          # possible bug if i split from one universal app bundle for mac because it'll try to rename both (i think)
+          for f in release/*.app.tar.gz; do
+            [ -f "$f" ] || continue
+            mv "$f" "release/${PROD}_${VERSION}_universal.app.tar.gz"
+          done
+          for f in release/*.app.tar.gz.sig; do
+            [ -f "$f" ] || continue
+            mv "$f" "release/${PROD}_${VERSION}_universal.app.tar.gz.sig"
+          done
+
       - name: Generate latest.json
         uses: ./.github/actions/generate-latest-json
         with:
