@@ -199,7 +199,7 @@ jobs:
               [ "$arch" = "aarch64" ] && dest_arch="arm64-v8a"
               [ "$arch" = "armv7" ] && dest_arch="armeabi-v7a"
               [ "$arch" = "i686" ] && dest_arch="x86"
-              cp "$apk" "release/${PREFIX}-android-${dest_arch}_${VERSION}.apk"
+              cp "$apk" "release/${PREFIX}_${VERSION}_android_${dest_arch}.apk"
             fi
           done
 
@@ -209,7 +209,7 @@ jobs:
           PROD="${{ needs.prepare.outputs.product-name }}"
           PREFIX="${PROD// / }"
           apk=$(find artifacts/android-universal -type f -name "*.apk" -print -quit 2>/dev/null || true)
-          [ -n "$apk" ] && cp "$apk" "release/${PREFIX}-android-universal_${VERSION}.apk"
+          [ -n "$apk" ] && cp "$apk" "release/${PREFIX}_${VERSION}_android_universal.apk"
 
       - name: Save iOS artifacts
         run: |
