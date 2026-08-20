@@ -62,7 +62,7 @@ runs:
             else:
                 print(f"::warning::Unrecognized signature file, skipping: {asset_name}")
         if not platforms:
-            raise SystemExit("No .sig files found in release/ — nothing to build latest.json from")
+            raise SystemExit("No .sig files found in release/ - nothing to build latest.json from")
         manifest = {
             "version": version,
             "notes": "",
